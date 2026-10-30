@@ -1,0 +1,4 @@
+dist
+package-lock.json
+# Docs are hand-written prose; only code and config are auto-formatted.
+*.md
