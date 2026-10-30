@@ -1,6 +1,6 @@
 # Epic 001: Study mode — Spec
 
-Status: **Approved**
+Status: **Done** (shipped 2026-10-30; frozen, do not edit)
 Last updated: 2026-10-30 (self-check removed, settings Save button and
 keyboard fix, from phone testing after the first deploy)
 

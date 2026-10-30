@@ -1,6 +1,6 @@
 # Epic 001: Study mode — Plan
 
-Status: **Approved**
+Status: **Done** (shipped 2026-10-30; frozen, do not edit)
 Spec: [spec.md](spec.md)
 
 ## 1. Stack
