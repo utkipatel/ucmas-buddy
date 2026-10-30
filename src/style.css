@@ -1,4 +1,18 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  background: #fbf7ef;
+  color: #2b1a0e;
+}
+
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.abacus {
+  display: block;
+  width: 100%;
+  height: auto;
 }
