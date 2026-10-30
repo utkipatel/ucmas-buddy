@@ -1,18 +1,144 @@
+:root {
+  --ink: #2b1a0e;
+  --muted: #7a6450;
+  --paper: #fbf7ef;
+  --accent: #a8431a;
+  --correct: #2f7a3b;
+  --wrong: #b3261e;
+}
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: #fbf7ef;
-  color: #2b1a0e;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 #app {
   max-width: 720px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px 16px 32px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
 }
 
 .abacus {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Answer area under the abacus */
+.answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  min-height: 3.5rem;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+button.link {
+  padding: 4px 8px;
+  background: none;
+  color: var(--accent);
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+.answer label {
+  flex-basis: 100%;
+  text-align: center;
+  color: var(--muted);
+}
+
+.answer input {
+  width: 8ch;
+  font-size: 1.5rem;
+  padding: 8px 12px;
+  text-align: center;
+  border: 2px solid var(--muted);
+  border-radius: 10px;
+}
+
+.revealed-number {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.result {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.result.correct {
+  color: var(--correct);
+}
+
+.result.wrong {
+  color: var(--wrong);
+}
+
+.score {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Settings, collapsed by default to save space on phones */
+.settings {
+  border-top: 1px solid #e4d6bd;
+  padding-top: 12px;
+}
+
+.settings summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.settings fieldset {
+  border: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.settings legend {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.settings select {
+  font: inherit;
+  padding: 4px;
+}
+
+.settings .choice {
+  display: block;
+  padding: 4px 0;
 }

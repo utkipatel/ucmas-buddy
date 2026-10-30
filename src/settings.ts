@@ -74,3 +74,12 @@ function isRange(value: unknown): value is DigitRange {
     isValidRange({ min, max })
   );
 }
+
+/** The browser's localStorage, or undefined where reading it throws. */
+export function browserStorage(): SettingsStorage | undefined {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}

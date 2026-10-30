@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MAX_NUMBER } from "../abacus/model";
+import { fakeRandom } from "../test/fakeRandom";
 import { type DigitRange, generateNumber, MAX_DIGITS } from "./generator";
-
-/** A fake Math.random that returns the given values in order, then repeats. */
-function fakeRandom(...values: number[]) {
-  let i = 0;
-  return () => values[i++ % values.length] ?? 0;
-}
 
 const LOWEST = 0;
 const HIGHEST = 0.999_999_9; // Math.random never returns 1
