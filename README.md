@@ -2,6 +2,7 @@
 
 Practice reading numbers on a UCMAS (soroban-style) abacus. The app shows a
 random number as beads; the learner reads it out loud and checks the answer.
+Built with Vite, React and TypeScript.
 
 ## Setup
 
