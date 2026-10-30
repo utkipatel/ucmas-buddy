@@ -4,6 +4,9 @@ Practice reading numbers on a UCMAS (soroban-style) abacus. The app shows a
 random number as beads; the learner reads it out loud and checks the answer.
 Built with Vite, React and TypeScript.
 
+**Try it:** https://utkipatel.github.io/ucmas-buddy/ (works on phones,
+tablets and laptops; on iPhone or iPad, use Share → Add to Home Screen)
+
 ## Setup
 
 Needs Node 26 or later.
@@ -24,6 +27,9 @@ npm install
 | `npm run format`     | Format all files with Prettier        |
 | `npm run build`      | Build the static site into `dist/`    |
 | `npm run check`      | Run every check CI runs, in order     |
+
+Every merge to `main` is published to GitHub Pages by
+`.github/workflows/deploy.yml`.
 
 ## Project docs
 
