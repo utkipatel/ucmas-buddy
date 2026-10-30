@@ -9,9 +9,10 @@ Spec: [spec.md](spec.md)
 |---|---|
 | **Vite** | Dev server with instant reload; builds static files for GitHub Pages. |
 | **TypeScript**, strict mode | Catches mistakes early; makes the data model explicit. |
-| **No UI framework** (plain DOM) | The app has one screen and a few buttons. A framework like React would add more to learn than it saves here. We can revisit for later epics. |
-| **SVG** for the abacus | Scales sharply to any screen size; each bead is an element we can style and test. |
+| **React** | The most common frontend framework, so the skills transfer. Components map cleanly onto the app: an abacus, a study screen, a settings panel. |
+| **SVG** (written as JSX) for the abacus | Scales sharply to any screen size; each bead is an element we can style and test. |
 | **Vitest** | Test runner that shares Vite's config; runs TypeScript directly. |
+| **React Testing Library** + jsdom | Tests components the way a user sees them, without a real browser. |
 | **ESLint + Prettier** | Lint and format, enforced in CI. |
 | **GitHub Actions** | CI on every PR; deploys to GitHub Pages on every merge to `main`. |
 
@@ -22,26 +23,28 @@ Node 26, npm.
 ```
 index.html                 page shell
 src/
-  main.ts                  entry point: wires everything together
+  main.tsx                 entry point: mounts <App />
+  App.tsx                  top-level component: holds settings state
   style.css
   abacus/
     model.ts               number -> rod and bead state (pure logic)
-    render.ts              rod and bead state -> SVG
+    Abacus.tsx             <Abacus rods={...} />: draws the SVG
   practice/
     generator.ts           random numbers within a digit range
     session.ts             study mode round and score logic (pure)
-    view.ts                buttons, answer input, score display
+    StudyScreen.tsx        abacus, Reveal / Check / Next, answer input, score
+    SettingsPanel.tsx      digit range and answer style controls
   settings.ts              load and save settings in browser storage
-  **/*.test.ts             tests sit next to the code they test
+  **/*.test.ts(x)          tests sit next to the code they test
 .github/workflows/
   ci.yml                   typecheck, lint, format check, test, build
   deploy.yml               build and publish to GitHub Pages
 ```
 
-The rule: **logic is pure and tested; DOM code is thin.** Everything that
-decides *what* to show lives in `model.ts`, `generator.ts`, `session.ts` and
-`settings.ts`, with no DOM access. `render.ts` and `view.ts` only turn state
-into elements and pass clicks back.
+The rule: **logic is pure and tested; components are thin.** Everything
+that decides *what* to show lives in `model.ts`, `generator.ts`, `session.ts`
+and `settings.ts`, which don't import React. Components hold state with
+`useState`, call those functions, and render the result.
 
 ## 3. Data model
 
@@ -82,7 +85,8 @@ interface SessionState {
   score: { correct: number; attempted: number };
 }
 
-// Pure functions: take a state, return a new one.
+// Pure functions: take a state, return a new one. StudyScreen keeps a
+// SessionState in useState and replaces it with the result.
 function reveal(s: SessionState): SessionState;               // self-check
 function check(s: SessionState, typed: string): SessionState; // type-it
 function next(s: SessionState, newNumber: number): SessionState;
@@ -114,10 +118,10 @@ function saveSettings(storage: Storage, s: Settings): void;
 
 | AC | Checked by |
 |---|---|
-| AC1 bead layout | Unit tests on `numberToRods` (every digit, 1–6 digit numbers, bounds) plus a render test that counts beads on the beam per rod |
+| AC1 bead layout | Unit tests on `numberToRods` (every digit, 1–6 digit numbers, bounds) plus an `<Abacus>` component test that counts beads on the beam per rod |
 | AC2 digit range | Unit tests on `generateNumber` with a fake `random`, plus a many-runs test |
-| AC3 self-check | Unit tests on `session.ts`; manual check in the browser |
-| AC4 type-it scoring | Unit tests on `check` (right, wrong, extra spaces, empty input) |
+| AC3 self-check | Unit tests on `session.ts`, plus a `<StudyScreen>` test: number hidden until Reveal is clicked, no score shown |
+| AC4 type-it scoring | Unit tests on `check` (right, wrong, extra spaces, empty input), plus a `<StudyScreen>` test that types an answer |
 | AC5 fits on phone | Manual check at 360px wide in browser dev tools and on a real phone |
 | AC6 settings persist | Unit tests on `loadSettings` / `saveSettings` with a fake storage |
 
@@ -126,16 +130,16 @@ function saveSettings(storage: Storage, s: Settings): void;
 Each becomes a GitHub issue in milestone "001 Study mode", done in this
 order, one PR each.
 
-1. **chore: scaffold project** — Vite + TypeScript, ESLint, Prettier, Vitest,
-   CI workflow, README with commands.
+1. **chore: scaffold project** — Vite + React + TypeScript, ESLint,
+   Prettier, Vitest, CI workflow, README with commands.
 2. **feat: abacus model** — `model.ts` + tests. (AC1)
 3. **feat: number generator** — `generator.ts` + tests. (AC2)
-4. **feat: draw abacus** — `render.ts` + render test; page shows a fixed
-   number. (AC1, AC5)
+4. **feat: draw abacus** — `<Abacus>` component + test (sets up React
+   Testing Library); the page shows a fixed number. (AC1, AC5)
 5. **feat: study mode logic** — `session.ts` + tests. (AC3, AC4)
 6. **feat: settings storage** — `settings.ts` + tests. (AC6)
-7. **feat: study mode screen** — `view.ts` and `main.ts`: buttons, answer
-   input, score, settings panel. (AC3–AC6)
+7. **feat: study mode screen** — `<StudyScreen>`, `<SettingsPanel>` and
+   `<App>`: buttons, answer input, score, settings. (AC3–AC6)
 8. **ci: deploy to GitHub Pages** — `deploy.yml`, Vite base path. (NFR)
 
 ## 7. Decisions and risks
