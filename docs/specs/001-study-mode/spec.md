@@ -1,6 +1,6 @@
-# UCMAS Buddy — Spec (v1)
+# Epic 001: Study mode — Spec
 
-Status: **Draft**, waiting for review
+Status: **Approved**
 Last updated: 2026-10-30
 
 ## 1. Purpose
@@ -114,24 +114,9 @@ two **answer styles** in settings. *Default: Self-check.*
 - Moving beads by hand
 - Long-term progress history and accounts
 
-## 7. Future ideas
+Future ideas are tracked as epic issues on GitHub (label `epic`).
 
-- **Flash mode:** show the abacus for a set time (for example 1–3 seconds),
-  then hide it; the learner recalls the number from memory. This is the core
-  of visual-memory (anzan) training.
-- **Timed test:** within a set time (default 1 minute), the learner reads as
-  many numbers as possible. At the end, the app shows how many they got right
-  and how many they attempted.
-- **Addition and subtraction tests:** once the learner knows the basics, the
-  app generates exercises (for example 23 + 45 − 12) to solve on the abacus or
-  mentally, at an adjustable level.
-- **Voice:** the learner says the number; the app recognizes it with the
-  browser's Web Speech API, checks it, says whether they were right, and moves
-  on. Works in Safari and Chrome, not Firefox.
-- Decimals on rods 7–11.
-- Progress over time, such as accuracy by digit count.
-
-## 8. Open questions
+## 7. Open questions
 
 - None right now. The defaults in *italics* above are guesses; change any of
   them during review.
