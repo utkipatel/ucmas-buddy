@@ -23,13 +23,7 @@ export function generateNumber(
   random: () => number = Math.random,
 ): number {
   const { min, max } = range;
-  if (
-    !Number.isInteger(min) ||
-    !Number.isInteger(max) ||
-    min < MIN_DIGITS ||
-    max > MAX_DIGITS ||
-    min > max
-  ) {
+  if (!isValidRange(range)) {
     throw new RangeError(
       `Expected a digit range within ${MIN_DIGITS}-${MAX_DIGITS}, got ${min}-${max}`,
     );
@@ -37,6 +31,17 @@ export function generateNumber(
 
   const digits = randomInt(min, max, random);
   return randomInt(10 ** (digits - 1), 10 ** digits - 1, random);
+}
+
+/** True when both ends are whole numbers within 1-6 and min <= max. */
+export function isValidRange({ min, max }: DigitRange): boolean {
+  return (
+    Number.isInteger(min) &&
+    Number.isInteger(max) &&
+    min >= MIN_DIGITS &&
+    max <= MAX_DIGITS &&
+    min <= max
+  );
 }
 
 /** Random whole number from `low` to `high`, inclusive. */
