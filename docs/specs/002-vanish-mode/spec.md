@@ -1,6 +1,6 @@
 # Epic 002: Vanish mode — Spec
 
-Status: **Draft**, waiting for review
+Status: **Approved**
 Last updated: 2026-10-30
 Epic issue: #2
 
