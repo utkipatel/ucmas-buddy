@@ -1,7 +1,8 @@
 # Epic 001: Study mode — Spec
 
 Status: **Approved**
-Last updated: 2026-10-30
+Last updated: 2026-10-30 (Type it flow and settings menu, from review of
+PR #24)
 
 ## 1. Purpose
 
@@ -63,11 +64,13 @@ two **answer styles** in settings. *Default: Self-check.*
 3. They tap **Reveal** to see the number.
 4. They tap **Next** to start a new round.
 
-**Type it** (scored):
+**Type it** (scored), one tap per number:
 1. A new number appears on the abacus.
-2. The learner enters the number on a numeric keypad and taps **Check**.
-3. The app says whether they were right and shows the correct number.
-4. They tap **Next** to start a new round.
+2. The learner enters the number on a numeric keypad and taps **Next** (or
+   presses Enter).
+3. The app scores the answer and right away shows a new number. A short
+   result line says whether the last answer was right and, if not, what the
+   number was. It stays until the next answer.
 
 ### F4. Session score (Type it only)
 - In Type it style, shows **correct / attempted** for the current session, for
@@ -77,6 +80,11 @@ two **answer styles** in settings. *Default: Self-check.*
 
 ### F5. Settings
 - Digit range (F1) and answer style (F3).
+- Opened from a **menu button in the header**, as a side panel over the
+  study screen, so the screen itself stays uncluttered.
+- Changing a setting starts a new number and resets the score, because
+  scores at different settings can't be compared. The settings panel says
+  so.
 - *Default: settings are remembered on the device* (in browser storage), so the
   learner doesn't set them again each time.
 
@@ -89,9 +97,10 @@ two **answer styles** in settings. *Default: Self-check.*
   digits and never starts with 0.
 - **AC3:** In Self-check style, the number is hidden until Reveal is tapped,
   and no score is shown.
-- **AC4:** In Type it style, entering the shown number counts as correct, and
-  any other entry counts as wrong and shows the correct number. Either way,
-  "attempted" goes up by one.
+- **AC4:** In Type it style, entering the shown number and tapping Next
+  counts as correct, and any other entry counts as wrong and shows what the
+  number was. Either way, "attempted" goes up by one and a new number
+  appears.
 - **AC5:** On a 360px-wide phone screen in portrait, the whole abacus and the
   controls are visible without scrolling or zooming.
 - **AC6:** After a reload, the digit range and answer style are the same as
