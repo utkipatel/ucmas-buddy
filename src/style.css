@@ -232,6 +232,30 @@ button.icon-button {
   padding: 4px;
 }
 
+.drawer .toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drawer .slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.drawer .slider input {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.drawer .slider output {
+  min-width: 3.5ch;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .drawer .save {
   width: 100%;
   margin-top: 24px;
