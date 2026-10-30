@@ -41,6 +41,11 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
   **PR titles must follow the commit format below**, and PR descriptions
   should read well as a commit body: what changed, why, and how to test.
   Review discussion goes in PR comments, not the description.
+- Wrap PR description lines at 72 characters or fewer. GitHub rewraps
+  longer lines in the squash commit body, which breaks sentences badly.
+- Start every comment Claude posts on GitHub (PR or issue) with
+  `🤖 Claude comment` on its own line, so the user can tell their own
+  comments from Claude's at a glance.
 - GitHub deletes merged branches automatically. Locally, clean up with
   `git switch main && git pull && git fetch --prune`.
 - Never push to `main` directly or merge a pull request without asking.
