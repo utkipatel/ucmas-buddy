@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { fakeRandom } from "../test/fakeRandom";
 import StudyScreen from "./StudyScreen";
 
@@ -69,5 +69,41 @@ describe("<StudyScreen> (AC4)", () => {
     expect(
       screen.getByLabelText(/your answer/i).getAttribute("inputmode"),
     ).toBe("numeric");
+  });
+});
+
+describe("<StudyScreen> with the phone keyboard open (AC5)", () => {
+  // jsdom has no on-screen keyboard, so fake the browser's visual viewport
+  // (the part of the page not covered by the keyboard).
+  function fakeVisualViewport() {
+    const viewport = new EventTarget();
+    vi.stubGlobal("visualViewport", viewport);
+    return viewport;
+  }
+  const scrolls = () => vi.mocked(Element.prototype.scrollIntoView).mock;
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("scrolls the abacus back into view when the keyboard opens", () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const viewport = fakeVisualViewport();
+    renderScreen();
+
+    screen.getByLabelText(/your answer/i).focus();
+    viewport.dispatchEvent(new Event("resize")); // keyboard opened
+
+    expect(scrolls().calls).toHaveLength(1);
+    expect(scrolls().contexts[0]).toBe(document.querySelector(".study"));
+    expect(scrolls().calls[0]?.[0]).toMatchObject({ block: "start" });
+  });
+
+  it("leaves scrolling alone when the answer box isn't focused", () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const viewport = fakeVisualViewport();
+    renderScreen();
+
+    viewport.dispatchEvent(new Event("resize")); // e.g. rotating the phone
+
+    expect(scrolls().calls).toHaveLength(0);
   });
 });
