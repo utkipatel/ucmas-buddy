@@ -32,8 +32,9 @@ src/
   practice/
     generator.ts           random numbers within a digit range
     session.ts             study mode round and score logic (pure)
-    StudyScreen.tsx        abacus, Reveal / Check / Next, answer input, score
-    SettingsPanel.tsx      digit range and answer style controls
+    StudyScreen.tsx        abacus, Reveal / Next, answer input, score
+    SettingsPanel.tsx      side panel with digit range and answer style,
+                           opened from a menu button in App's header
   settings.ts              load and save settings in browser storage
   **/*.test.ts(x)          tests sit next to the code they test
 .github/workflows/
@@ -80,16 +81,17 @@ type AnswerStyle = "self-check" | "type-it";
 
 interface SessionState {
   number: number;
-  phase: "asking" | "revealed"; // revealed = after Reveal or Check
-  lastAnswerCorrect?: boolean;  // type-it only
+  phase: "asking" | "revealed"; // self-check: revealed after Reveal
+  lastResult: { number: number; correct: boolean } | null; // type-it only
   score: { correct: number; attempted: number };
 }
 
 // Pure functions: take a state, return a new one. StudyScreen keeps a
 // SessionState in useState and replaces it with the result.
-function reveal(s: SessionState): SessionState;               // self-check
-function check(s: SessionState, typed: string): SessionState; // type-it
-function next(s: SessionState, newNumber: number): SessionState;
+function reveal(s: SessionState): SessionState;            // self-check
+function next(s: SessionState, newNumber: number): SessionState; // self-check
+// type-it: score the typed answer and move to newNumber in one step
+function answer(s: SessionState, typed: string, newNumber: number): SessionState;
 function resetScore(s: SessionState): SessionState;
 ```
 
@@ -121,7 +123,7 @@ function saveSettings(storage: Storage, s: Settings): void;
 | AC1 bead layout | Unit tests on `numberToRods` (every digit, 1–6 digit numbers, bounds) plus an `<Abacus>` component test that counts beads on the beam per rod |
 | AC2 digit range | Unit tests on `generateNumber` with a fake `random`, plus a many-runs test |
 | AC3 self-check | Unit tests on `session.ts`, plus a `<StudyScreen>` test: number hidden until Reveal is clicked, no score shown |
-| AC4 type-it scoring | Unit tests on `check` (right, wrong, extra spaces, empty input), plus a `<StudyScreen>` test that types an answer |
+| AC4 type-it scoring | Unit tests on `answer` (right, wrong, extra spaces, empty input), plus a `<StudyScreen>` test that types answers |
 | AC5 fits on phone | Manual check at 360px wide in browser dev tools and on a real phone |
 | AC6 settings persist | Unit tests on `loadSettings` / `saveSettings` with a fake storage |
 
