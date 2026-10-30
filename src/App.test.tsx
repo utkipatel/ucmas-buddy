@@ -8,6 +8,28 @@ beforeEach(() => localStorage.clear());
 const openSettings = () =>
   fireEvent.click(screen.getByRole("button", { name: /open settings/i }));
 
+const save = () =>
+  fireEvent.click(screen.getByRole("button", { name: /save/i }));
+
+/** Picks a digit range in the open settings panel (without saving). */
+function pickRange(min: string, max: string) {
+  fireEvent.change(screen.getByLabelText(/from/i), { target: { value: min } });
+  fireEvent.change(screen.getByLabelText(/to/i), { target: { value: max } });
+}
+
+/** Answers the current number wrongly ("0" is never generated). */
+function answerWrong() {
+  fireEvent.change(screen.getByLabelText(/your answer/i), {
+    target: { value: "0" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /next/i }));
+}
+
+const rangeShown = () => [
+  screen.getByLabelText<HTMLSelectElement>(/from/i).value,
+  screen.getByLabelText<HTMLSelectElement>(/to/i).value,
+];
+
 describe("<App>", () => {
   it("starts with the answer box and settings closed", () => {
     render(<App />);
@@ -40,26 +62,57 @@ describe("<App>", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("keeps settings but not the score after a reload (AC6)", () => {
+  it("applies a change only when Save is tapped (AC7)", () => {
+    render(<App />);
+    answerWrong();
+    openSettings();
+    pickRange("2", "4");
+    // Nothing applied yet: the score from before is still there.
+    expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
+
+    save();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
+    openSettings();
+    expect(rangeShown()).toEqual(["2", "4"]);
+  });
+
+  it("keeps the old settings when closed without saving (AC7)", () => {
+    render(<App />);
+    answerWrong();
+    openSettings();
+    pickRange("4", "5");
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
+    openSettings();
+    expect(rangeShown()).toEqual(["1", "3"]);
+  });
+
+  it("can only save when something changed", () => {
+    render(<App />);
+    openSettings();
+    const saveButton = screen.getByRole<HTMLButtonElement>("button", {
+      name: /save/i,
+    });
+    expect(saveButton.disabled).toBe(true);
+    pickRange("2", "3");
+    expect(saveButton.disabled).toBe(false);
+  });
+
+  it("keeps saved settings but not the score after a reload (AC6)", () => {
     const first = render(<App />);
     openSettings();
-    fireEvent.change(screen.getByLabelText(/from/i), {
-      target: { value: "2" },
-    });
-    fireEvent.change(screen.getByLabelText(/to/i), { target: { value: "4" } });
-    fireEvent.change(screen.getByLabelText(/your answer/i), {
-      target: { value: "1" }, // never right: numbers have 2-4 digits
-    });
-    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    pickRange("2", "4");
+    save();
+    answerWrong();
     expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
 
     first.unmount(); // like closing the page
     render(<App />);
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
-
     openSettings();
-    expect(screen.getByLabelText<HTMLSelectElement>(/from/i).value).toBe("2");
-    expect(screen.getByLabelText<HTMLSelectElement>(/to/i).value).toBe("4");
+    expect(rangeShown()).toEqual(["2", "4"]);
   });
 
   it("keeps the digit range valid when one end passes the other", () => {
@@ -68,6 +121,6 @@ describe("<App>", () => {
     fireEvent.change(screen.getByLabelText(/from/i), {
       target: { value: "5" },
     });
-    expect(screen.getByLabelText<HTMLSelectElement>(/to/i).value).toBe("5");
+    expect(rangeShown()).toEqual(["5", "5"]);
   });
 });

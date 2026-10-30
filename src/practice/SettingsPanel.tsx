@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import type { Settings } from "../settings";
 import { MAX_DIGITS, MIN_DIGITS } from "./generator";
 
 interface SettingsPanelProps {
   settings: Settings;
-  onChange: (settings: Settings) => void;
+  /** Called with the new settings when the learner taps Save. */
+  onSave: (settings: Settings) => void;
   onClose: () => void;
 }
 
@@ -13,13 +14,19 @@ const DIGIT_OPTIONS = Array.from(
   (_, i) => MIN_DIGITS + i,
 );
 
-/** Side panel with the settings. Closes on ×, Escape, or a tap outside. */
+/**
+ * Side panel with the settings. Changes are kept in a draft until Save;
+ * closing (×, Escape, or a tap outside) throws the draft away.
+ */
 export default function SettingsPanel({
   settings,
-  onChange,
+  onSave,
   onClose,
 }: SettingsPanelProps) {
-  const { range } = settings;
+  const [draft, setDraft] = useState(settings);
+  const { range } = draft;
+  const changed =
+    range.min !== settings.range.min || range.max !== settings.range.max;
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -31,9 +38,14 @@ export default function SettingsPanel({
 
   // Keep min <= max by moving the other end when needed.
   const setMin = (min: number) =>
-    onChange({ ...settings, range: { min, max: Math.max(min, range.max) } });
+    setDraft({ ...draft, range: { min, max: Math.max(min, range.max) } });
   const setMax = (max: number) =>
-    onChange({ ...settings, range: { min: Math.min(range.min, max), max } });
+    setDraft({ ...draft, range: { min: Math.min(range.min, max), max } });
+
+  function handleSave(event: FormEvent) {
+    event.preventDefault();
+    onSave(draft);
+  }
 
   return (
     <div
@@ -60,35 +72,41 @@ export default function SettingsPanel({
           </button>
         </div>
 
-        <p className="note">
-          Changing a setting starts a new number and resets the score.
-        </p>
+        <form onSubmit={handleSave}>
+          <p className="note">
+            Saving starts a new number and resets the score.
+          </p>
 
-        <fieldset>
-          <legend>Digits</legend>
-          <label>
-            From{" "}
-            <select
-              value={range.min}
-              onChange={(e) => setMin(Number(e.target.value))}
-            >
-              {DIGIT_OPTIONS.map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-            </select>
-          </label>{" "}
-          <label>
-            to{" "}
-            <select
-              value={range.max}
-              onChange={(e) => setMax(Number(e.target.value))}
-            >
-              {DIGIT_OPTIONS.map((n) => (
-                <option key={n}>{n}</option>
-              ))}
-            </select>
-          </label>
-        </fieldset>
+          <fieldset>
+            <legend>Digits</legend>
+            <label>
+              From{" "}
+              <select
+                value={range.min}
+                onChange={(e) => setMin(Number(e.target.value))}
+              >
+                {DIGIT_OPTIONS.map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            </label>{" "}
+            <label>
+              to{" "}
+              <select
+                value={range.max}
+                onChange={(e) => setMax(Number(e.target.value))}
+              >
+                {DIGIT_OPTIONS.map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+
+          <button type="submit" className="save" disabled={!changed}>
+            Save
+          </button>
+        </form>
       </aside>
     </div>
   );
