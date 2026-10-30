@@ -1,15 +1,16 @@
 # Epic 001: Study mode — Spec
 
 Status: **Approved**
-Last updated: 2026-10-30 (Type it flow and settings menu, from review of
-PR #24)
+Last updated: 2026-10-30 (self-check removed, settings Save button and
+keyboard fix, from phone testing after the first deploy)
 
 ## 1. Purpose
 
 UCMAS Buddy helps a beginner learn to read numbers on a UCMAS (soroban-style)
 abacus. The app shows a random number as beads on the abacus. The learner reads
-it out loud and checks their answer. Regular practice builds the bead-to-number
-recognition that UCMAS mental math (anzan) depends on.
+it (out loud if they like) and types it, and the app checks the answer. Regular
+practice builds the bead-to-number recognition that UCMAS mental math (anzan)
+depends on.
 
 **User:** an adult beginner practicing on a phone, tablet or laptop, usually in
 short sessions.
@@ -55,16 +56,7 @@ Example: 342 → rod 4 = 3, rod 5 = 4, rod 6 = 2; all other rods 0.
   and a laptop.
 
 ### F3. Study mode (the only mode in v1)
-The abacus stays visible until the learner answers. The learner picks one of
-two **answer styles** in settings. *Default: Self-check.*
-
-**Self-check** (practice only, no score):
-1. A new number appears on the abacus.
-2. The learner reads it out loud.
-3. They tap **Reveal** to see the number.
-4. They tap **Next** to start a new round.
-
-**Type it** (scored), one tap per number:
+One tap per number:
 1. A new number appears on the abacus.
 2. The learner enters the number on a numeric keypad and taps **Next** (or
    presses Enter).
@@ -72,19 +64,23 @@ two **answer styles** in settings. *Default: Self-check.*
    result line says whether the last answer was right and, if not, what the
    number was. It stays until the next answer.
 
-### F4. Session score (Type it only)
-- In Type it style, shows **correct / attempted** for the current session, for
-  example `7 / 9`. Self-check style shows no score.
+Typing is the only way to answer in v1. (An earlier "self-check" style, where
+the learner revealed the number and checked themselves, was removed after
+phone testing: voice input will cover answering out loud, with checking.)
+
+### F4. Session score
+- Shows **correct / attempted** for the current session, for example `7 / 9`.
 - A **Reset** control sets the score to 0 / 0.
 - The score isn't saved. Reloading the page starts a new session.
 
 ### F5. Settings
-- Digit range (F1) and answer style (F3).
+- Digit range (F1).
 - Opened from a **menu button in the header**, as a side panel over the
   study screen, so the screen itself stays uncluttered.
-- Changing a setting starts a new number and resets the score, because
-  scores at different settings can't be compared. The settings panel says
-  so.
+- Changes take effect only when the learner taps **Save**. Closing the panel
+  without saving keeps the previous settings.
+- Saving starts a new number and resets the score, because scores at
+  different settings can't be compared. The settings panel says so.
 - *Default: settings are remembered on the device* (in browser storage), so the
   learner doesn't set them again each time.
 
@@ -95,16 +91,19 @@ two **answer styles** in settings. *Default: Self-check.*
   at 0.
 - **AC2:** Given a digit range of 2 to 4, every generated number has 2, 3 or 4
   digits and never starts with 0.
-- **AC3:** In Self-check style, the number is hidden until Reveal is tapped,
-  and no score is shown.
-- **AC4:** In Type it style, entering the shown number and tapping Next
+- **AC3:** *Removed* (was: self-check style hides the number until Reveal).
+- **AC4:** Entering the shown number and tapping Next
   counts as correct, and any other entry counts as wrong and shows what the
   number was. Either way, "attempted" goes up by one and a new number
   appears.
 - **AC5:** On a 360px-wide phone screen in portrait, the whole abacus and the
-  controls are visible without scrolling or zooming.
-- **AC6:** After a reload, the digit range and answer style are the same as
-  before, and the score is 0 / 0.
+  controls are visible without scrolling or zooming, including while the
+  number pad is open.
+- **AC6:** After a reload, the digit range is the same as before, and the
+  score is 0 / 0.
+- **AC7:** Changing the digit range in settings has no effect until Save is
+  tapped. Save applies it, shows a new number and resets the score to 0 / 0.
+  Closing the panel without saving keeps the old range.
 
 ## 5. Non-functional requirements
 
