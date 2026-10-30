@@ -9,6 +9,9 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
+/** How long the closing animation runs; matches `.closing` in style.css. */
+export const CLOSE_MS = 250;
+
 const DIGIT_OPTIONS = Array.from(
   { length: MAX_DIGITS - MIN_DIGITS + 1 },
   (_, i) => MIN_DIGITS + i,
@@ -24,17 +27,26 @@ export default function SettingsPanel({
   onClose,
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState(settings);
+  const [closing, setClosing] = useState(false);
   const { range } = draft;
   const changed =
     range.min !== settings.range.min || range.max !== settings.range.max;
 
+  // Closing first plays the slide-out animation, then removes the panel.
+  const close = () => setClosing(true);
+  useEffect(() => {
+    if (!closing) return;
+    const timer = setTimeout(onClose, CLOSE_MS);
+    return () => clearTimeout(timer);
+  }, [closing, onClose]);
+
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") setClosing(true);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+  }, []);
 
   // Keep min <= max by moving the other end when needed.
   const setMin = (min: number) =>
@@ -45,13 +57,14 @@ export default function SettingsPanel({
   function handleSave(event: FormEvent) {
     event.preventDefault();
     onSave(draft);
+    close();
   }
 
   return (
     <div
-      className="drawer-backdrop"
+      className={closing ? "drawer-backdrop closing" : "drawer-backdrop"}
       data-testid="drawer-backdrop"
-      onClick={(event) => event.target === event.currentTarget && onClose()}
+      onClick={(event) => event.target === event.currentTarget && close()}
     >
       <aside
         className="drawer"
@@ -65,7 +78,7 @@ export default function SettingsPanel({
             type="button"
             className="icon-button"
             aria-label="Close settings"
-            onClick={onClose}
+            onClick={close}
             autoFocus
           >
             ×
