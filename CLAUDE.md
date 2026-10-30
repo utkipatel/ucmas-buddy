@@ -25,21 +25,49 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
 
 1. A new epic starts from its epic issue: write `spec.md`, get approval.
 2. Write `plan.md`, get approval, then create task issues from it.
-3. For each task: create a branch (`task/<issue#>-short-name`), write tests
-   for the logic first, implement, then open a pull request that says
-   `Closes #<issue#>`. The user reviews and merges.
+3. For each task: create a branch from `main`, write tests for the logic
+   first, implement, then open a pull request that says `Closes #<issue#>`.
+   The user reviews and merges.
 4. If a requested change alters behavior, update the spec first and get
    approval before writing code.
 
-## Conventions
+## Branches and pull requests
 
+- One branch and one pull request per task. Branch name:
+  `<type>/<issue#>-short-name`, for example `feat/12-abacus-model`. Small
+  changes without an issue use `<type>/short-name`.
+- PRs are squash-merged, and the PR title becomes the single commit on
+  `main`, so **PR titles must follow the commit format below**.
+- GitHub deletes merged branches automatically. Locally, clean up with
+  `git switch main && git pull && git fetch --prune`.
+- Never push to `main` directly or merge a pull request without asking.
+
+## Commit messages (Conventional Commits)
+
+- Exactly **one line**: `type: description`. Lowercase, imperative, no
+  trailing period, at most 72 characters. No body and no trailers (no
+  `Co-Authored-By`).
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`.
+- Examples: `feat: add digit-to-bead conversion`,
+  `docs: add study mode plan`, `chore: set up eslint and prettier`.
+
+## Keeping diffs small
+
+- Aim for under about 300 changed lines per PR, not counting generated files
+  such as `package-lock.json`. If a task looks bigger, split the issue first.
+- Each commit is one logical step that still builds and passes tests.
+- Don't mix in unrelated changes (formatting, renames, drive-by fixes). Put
+  them in their own PR.
+
+## Code style
+
+- Enforced by tools, not by hand: Prettier (formatting), ESLint (bug-prone
+  code), TypeScript strict mode. CI runs them on every PR, and a PR can't be
+  merged while checks fail.
 - Stack: Vite + TypeScript + Vitest (details in the epic's `plan.md`).
 - Keep docs in plain, simple English. Refer to the person using the app as
   "the learner", never a specific person.
-- Commit messages: short imperative subject line, for example
-  `Add digit-to-bead conversion`.
-- Never push to `main` directly or merge a pull request without asking.
 
 ## Commands
 
-To be added once the project is scaffolded (dev server, tests, build).
+See `README.md` (added with the project scaffold).
