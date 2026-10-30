@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import SettingsPanel from "./practice/SettingsPanel";
 import StudyScreen from "./practice/StudyScreen";
 import {
@@ -12,6 +12,8 @@ export default function App() {
   const [settings, setSettings] = useState(() =>
     loadSettings(browserStorage()),
   );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   function handleSettingsChange(newSettings: Settings) {
     setSettings(newSettings);
@@ -26,9 +28,28 @@ export default function App() {
 
   return (
     <>
-      <h1>UCMAS Buddy</h1>
+      <header className="app-header">
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="Open settings"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(true)}
+        >
+          ☰
+        </button>
+        <h1>UCMAS Buddy</h1>
+      </header>
+
       <StudyScreen key={sessionKey} settings={settings} />
-      <SettingsPanel settings={settings} onChange={handleSettingsChange} />
+
+      {menuOpen && (
+        <SettingsPanel
+          settings={settings}
+          onChange={handleSettingsChange}
+          onClose={closeMenu}
+        />
+      )}
     </>
   );
 }

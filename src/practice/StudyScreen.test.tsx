@@ -16,12 +16,15 @@ const typeIt: Settings = { range: { min: 3, max: 3 }, answerStyle: "type-it" };
 const click = (name: RegExp) =>
   fireEvent.click(screen.getByRole("button", { name }));
 
-function typeAnswer(text: string) {
+/** Types an answer and taps Next, as the learner would. */
+function answerWith(text: string) {
   fireEvent.change(screen.getByLabelText(/your answer/i), {
     target: { value: text },
   });
-  click(/check/i);
+  click(/next/i);
 }
+
+const result = () => screen.getByRole("status").textContent;
 
 describe("<StudyScreen> in self-check style (AC3)", () => {
   it("hides the number until Reveal, then shows it", () => {
@@ -50,39 +53,43 @@ describe("<StudyScreen> in self-check style (AC3)", () => {
 });
 
 describe("<StudyScreen> in type-it style (AC4)", () => {
-  it("counts the right answer as correct", () => {
+  it("scores a right answer and moves on in one tap", () => {
     render(<StudyScreen settings={typeIt} random={random()} />);
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
 
-    typeAnswer("100");
-    expect(screen.getByRole("status").textContent).toMatch(/correct/i);
+    answerWith("100");
+    expect(result()).toMatch(/right.*100/i);
     expect(screen.getByText("Score: 1 / 1")).toBeTruthy();
+    // Ready for the next number: the box is empty again.
+    expect(screen.getByLabelText<HTMLInputElement>(/your answer/i).value).toBe(
+      "",
+    );
   });
 
-  it("counts a wrong answer and shows the right number", () => {
+  it("scores a wrong answer and says what the number was", () => {
     render(<StudyScreen settings={typeIt} random={random()} />);
-    typeAnswer("101");
-    expect(screen.getByRole("status").textContent).toMatch(/not quite.*100/i);
+    answerWith("101");
+    expect(result()).toMatch(/not quite.*100/i);
     expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
   });
 
-  it("keeps the score across rounds and resets it on request", () => {
+  it("keeps the score across numbers and resets it on request", () => {
     render(<StudyScreen settings={typeIt} random={random()} />);
-    typeAnswer("100");
-    click(/next/i);
-    typeAnswer("1");
+    answerWith("100"); // right
+    answerWith("1"); // wrong: the second number is 550
+    expect(result()).toMatch(/not quite.*550/i);
     expect(screen.getByText("Score: 1 / 2")).toBeTruthy();
 
     click(/reset/i);
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
   });
 
-  it("can't check an empty answer", () => {
+  it("can't submit an empty answer", () => {
     render(<StudyScreen settings={typeIt} random={random()} />);
-    const check = screen.getByRole<HTMLButtonElement>("button", {
-      name: /check/i,
+    const nextButton = screen.getByRole<HTMLButtonElement>("button", {
+      name: /next/i,
     });
-    expect(check.disabled).toBe(true);
+    expect(nextButton.disabled).toBe(true);
   });
 
   it("opens a number pad on phones", () => {

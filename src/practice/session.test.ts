@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  check,
+  answer,
   next,
   parseAnswer,
   resetScore,
@@ -14,13 +14,13 @@ describe("startSession", () => {
     expect(startSession(342)).toEqual<SessionState>({
       number: 342,
       phase: "asking",
-      lastAnswerCorrect: null,
+      lastResult: null,
       score: { correct: 0, attempted: 0 },
     });
   });
 });
 
-describe("self-check: reveal (AC3)", () => {
+describe("self-check: reveal and next (AC3)", () => {
   it("keeps the number hidden until Reveal", () => {
     expect(startSession(342).phase).toBe("asking");
     expect(reveal(startSession(342)).phase).toBe("revealed");
@@ -32,59 +32,60 @@ describe("self-check: reveal (AC3)", () => {
       attempted: 0,
     });
   });
+
+  it("asks about a new, hidden number on Next", () => {
+    const s = next(reveal(startSession(342)), 57);
+    expect(s.number).toBe(57);
+    expect(s.phase).toBe("asking");
+  });
 });
 
-describe("type it: check (AC4)", () => {
-  it("counts the shown number as correct", () => {
-    const s = check(startSession(342), "342");
-    expect(s.phase).toBe("revealed");
-    expect(s.lastAnswerCorrect).toBe(true);
-    expect(s.score).toEqual({ correct: 1, attempted: 1 });
+describe("type it: answer (AC4)", () => {
+  it("counts the shown number as correct and moves on", () => {
+    expect(answer(startSession(342), "342", 57)).toEqual<SessionState>({
+      number: 57,
+      phase: "asking",
+      lastResult: { number: 342, correct: true },
+      score: { correct: 1, attempted: 1 },
+    });
   });
 
-  it("counts any other number as wrong and reveals the right one", () => {
-    const s = check(startSession(342), "324");
-    expect(s.phase).toBe("revealed");
-    expect(s.lastAnswerCorrect).toBe(false);
+  it("counts any other number as wrong and remembers the right one", () => {
+    const s = answer(startSession(342), "324", 57);
+    expect(s.number).toBe(57);
+    expect(s.lastResult).toEqual({ number: 342, correct: false });
     expect(s.score).toEqual({ correct: 0, attempted: 1 });
   });
 
   it("counts text that isn't a number as wrong", () => {
-    expect(check(startSession(342), "abc").lastAnswerCorrect).toBe(false);
-    expect(check(startSession(342), "3.42").lastAnswerCorrect).toBe(false);
+    expect(answer(startSession(342), "abc", 57).lastResult?.correct).toBe(
+      false,
+    );
+    expect(answer(startSession(342), "3.42", 57).lastResult?.correct).toBe(
+      false,
+    );
   });
 
   it("ignores an empty answer instead of counting it", () => {
     const start = startSession(342);
-    expect(check(start, "")).toEqual(start);
-    expect(check(start, "   ")).toEqual(start);
+    expect(answer(start, "", 57)).toEqual(start);
+    expect(answer(start, "   ", 57)).toEqual(start);
   });
 
-  it("only scores once per number", () => {
-    const once = check(startSession(342), "342");
-    expect(check(once, "342")).toEqual(once);
-  });
-});
-
-describe("next", () => {
-  it("asks about a new number and keeps the score", () => {
-    const answered = check(startSession(342), "342");
-    expect(next(answered, 57)).toEqual<SessionState>({
-      number: 57,
-      phase: "asking",
-      lastAnswerCorrect: null,
-      score: { correct: 1, attempted: 1 },
-    });
+  it("keeps a running score across numbers", () => {
+    const first = answer(startSession(342), "342", 57);
+    const second = answer(first, "75", 8);
+    expect(second.score).toEqual({ correct: 1, attempted: 2 });
+    expect(second.lastResult).toEqual({ number: 57, correct: false });
   });
 });
 
 describe("resetScore", () => {
-  it("sets the score to 0 / 0 and keeps the current round", () => {
-    const answered = check(startSession(342), "1");
-    const reset = resetScore(answered);
+  it("sets the score to 0 / 0 and clears the last result", () => {
+    const reset = resetScore(answer(startSession(342), "1", 57));
     expect(reset.score).toEqual({ correct: 0, attempted: 0 });
-    expect(reset.number).toBe(342);
-    expect(reset.phase).toBe("revealed");
+    expect(reset.lastResult).toBeNull();
+    expect(reset.number).toBe(57);
   });
 });
 
