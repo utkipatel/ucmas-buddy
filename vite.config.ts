@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [react()],
   test: {
     passWithNoTests: true,
+    setupFiles: ["src/test/setup.ts"],
   },
 });
