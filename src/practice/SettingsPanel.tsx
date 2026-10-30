@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import type { Settings } from "../settings";
 import { MAX_DIGITS, MIN_DIGITS } from "./generator";
-import type { AnswerStyle } from "./session";
 
 interface SettingsPanelProps {
   settings: Settings;
@@ -14,18 +13,13 @@ const DIGIT_OPTIONS = Array.from(
   (_, i) => MIN_DIGITS + i,
 );
 
-const ANSWER_STYLES: { value: AnswerStyle; label: string }[] = [
-  { value: "self-check", label: "Say it, then reveal" },
-  { value: "type-it", label: "Type it (scored)" },
-];
-
 /** Side panel with the settings. Closes on ×, Escape, or a tap outside. */
 export default function SettingsPanel({
   settings,
   onChange,
   onClose,
 }: SettingsPanelProps) {
-  const { range, answerStyle } = settings;
+  const { range } = settings;
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -94,21 +88,6 @@ export default function SettingsPanel({
               ))}
             </select>
           </label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Answer style</legend>
-          {ANSWER_STYLES.map(({ value, label }) => (
-            <label key={value} className="choice">
-              <input
-                type="radio"
-                name="answer-style"
-                checked={answerStyle === value}
-                onChange={() => onChange({ ...settings, answerStyle: value })}
-              />{" "}
-              {label}
-            </label>
-          ))}
         </fieldset>
       </aside>
     </div>

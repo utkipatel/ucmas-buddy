@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   answer,
-  next,
   parseAnswer,
   resetScore,
-  reveal,
   type SessionState,
   startSession,
 } from "./session";
@@ -13,38 +11,16 @@ describe("startSession", () => {
   it("starts asking about the first number with a 0 / 0 score", () => {
     expect(startSession(342)).toEqual<SessionState>({
       number: 342,
-      phase: "asking",
       lastResult: null,
       score: { correct: 0, attempted: 0 },
     });
   });
 });
 
-describe("self-check: reveal and next (AC3)", () => {
-  it("keeps the number hidden until Reveal", () => {
-    expect(startSession(342).phase).toBe("asking");
-    expect(reveal(startSession(342)).phase).toBe("revealed");
-  });
-
-  it("does not touch the score", () => {
-    expect(reveal(startSession(342)).score).toEqual({
-      correct: 0,
-      attempted: 0,
-    });
-  });
-
-  it("asks about a new, hidden number on Next", () => {
-    const s = next(reveal(startSession(342)), 57);
-    expect(s.number).toBe(57);
-    expect(s.phase).toBe("asking");
-  });
-});
-
-describe("type it: answer (AC4)", () => {
+describe("answer (AC4)", () => {
   it("counts the shown number as correct and moves on", () => {
     expect(answer(startSession(342), "342", 57)).toEqual<SessionState>({
       number: 57,
-      phase: "asking",
       lastResult: { number: 342, correct: true },
       score: { correct: 1, attempted: 1 },
     });

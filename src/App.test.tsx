@@ -9,9 +9,10 @@ const openSettings = () =>
   fireEvent.click(screen.getByRole("button", { name: /open settings/i }));
 
 describe("<App>", () => {
-  it("starts in self-check style with settings closed", () => {
+  it("starts with the answer box and settings closed", () => {
     render(<App />);
-    expect(screen.getByRole("button", { name: /reveal/i })).toBeTruthy();
+    expect(screen.getByLabelText(/your answer/i)).toBeTruthy();
+    expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
@@ -39,17 +40,9 @@ describe("<App>", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("switches to type-it style from settings", () => {
-    render(<App />);
-    openSettings();
-    fireEvent.click(screen.getByLabelText(/type it/i));
-    expect(screen.getByLabelText(/your answer/i)).toBeTruthy();
-  });
-
   it("keeps settings but not the score after a reload (AC6)", () => {
     const first = render(<App />);
     openSettings();
-    fireEvent.click(screen.getByLabelText(/type it/i));
     fireEvent.change(screen.getByLabelText(/from/i), {
       target: { value: "2" },
     });
@@ -65,9 +58,6 @@ describe("<App>", () => {
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
 
     openSettings();
-    expect(screen.getByLabelText<HTMLInputElement>(/type it/i).checked).toBe(
-      true,
-    );
     expect(screen.getByLabelText<HTMLSelectElement>(/from/i).value).toBe("2");
     expect(screen.getByLabelText<HTMLSelectElement>(/to/i).value).toBe("4");
   });

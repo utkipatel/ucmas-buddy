@@ -23,8 +23,8 @@ export default function App() {
   // A new key gives StudyScreen a fresh start: changing a setting starts a
   // new round with a 0 / 0 score, since scores at different settings
   // can't be compared.
-  const { range, answerStyle } = settings;
-  const sessionKey = `${range.min}-${range.max}-${answerStyle}`;
+  const { range } = settings;
+  const sessionKey = `${range.min}-${range.max}`;
 
   return (
     <>
@@ -41,7 +41,7 @@ export default function App() {
         <h1>UCMAS Buddy</h1>
       </header>
 
-      <StudyScreen key={sessionKey} settings={settings} />
+      <StudyScreen key={sessionKey} range={range} />
 
       {menuOpen && (
         <SettingsPanel

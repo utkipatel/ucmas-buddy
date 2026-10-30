@@ -29,15 +29,11 @@ const brokenStorage: SettingsStorage = {
 
 const CUSTOM: Settings = {
   range: { min: 2, max: 5 },
-  answerStyle: "type-it",
 };
 
 describe("settings", () => {
-  it("defaults to a 1-3 digit range and self-check", () => {
-    expect(DEFAULT_SETTINGS).toEqual({
-      range: { min: 1, max: 3 },
-      answerStyle: "self-check",
-    });
+  it("defaults to a 1-3 digit range", () => {
+    expect(DEFAULT_SETTINGS).toEqual({ range: { min: 1, max: 3 } });
   });
 
   it("uses the defaults when nothing is saved", () => {
@@ -56,18 +52,16 @@ describe("settings", () => {
     );
   });
 
-  it("keeps each valid setting and replaces only the invalid one", () => {
-    const badRange = JSON.stringify({ ...CUSTOM, range: { min: 5, max: 2 } });
-    expect(loadSettings(fakeStorage({ [SETTINGS_KEY]: badRange }))).toEqual({
-      range: DEFAULT_SETTINGS.range,
-      answerStyle: "type-it",
-    });
+  it("uses the default range when the saved one is invalid", () => {
+    const badRange = JSON.stringify({ range: { min: 5, max: 2 } });
+    expect(loadSettings(fakeStorage({ [SETTINGS_KEY]: badRange }))).toEqual(
+      DEFAULT_SETTINGS,
+    );
+  });
 
-    const badStyle = JSON.stringify({ ...CUSTOM, answerStyle: "shout-it" });
-    expect(loadSettings(fakeStorage({ [SETTINGS_KEY]: badStyle }))).toEqual({
-      range: CUSTOM.range,
-      answerStyle: DEFAULT_SETTINGS.answerStyle,
-    });
+  it("ignores the answer style saved by older versions", () => {
+    const old = JSON.stringify({ ...CUSTOM, answerStyle: "self-check" });
+    expect(loadSettings(fakeStorage({ [SETTINGS_KEY]: old }))).toEqual(CUSTOM);
   });
 
   it.each([null, 42, "text", [], { range: "1-3" }])(

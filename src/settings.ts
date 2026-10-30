@@ -3,16 +3,13 @@
  * Storage is passed in so tests don't need a browser.
  */
 import { type DigitRange, isValidRange } from "./practice/generator";
-import type { AnswerStyle } from "./practice/session";
 
 export interface Settings {
   range: DigitRange;
-  answerStyle: AnswerStyle;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   range: { min: 1, max: 3 },
-  answerStyle: "self-check",
 };
 
 /** The ".v1" lets a future version change the format without misreading old data. */
@@ -21,11 +18,10 @@ export const SETTINGS_KEY = "ucmas-buddy.settings.v1";
 /** The part of the browser's localStorage this file uses. */
 export type SettingsStorage = Pick<Storage, "getItem" | "setItem">;
 
-const ANSWER_STYLES: readonly AnswerStyle[] = ["self-check", "type-it"];
-
 /**
  * Returns the saved settings. Anything missing, invalid or unreadable
  * falls back to the default for that setting, so the app always starts.
+ * Fields no longer used (such as an old answer style) are ignored.
  */
 export function loadSettings(storage: SettingsStorage | undefined): Settings {
   let saved: unknown;
@@ -38,16 +34,11 @@ export function loadSettings(storage: SettingsStorage | undefined): Settings {
     return DEFAULT_SETTINGS;
   }
 
-  const { range, answerStyle } = saved as Partial<
-    Record<keyof Settings, unknown>
-  >;
+  const { range } = saved as Partial<Record<keyof Settings, unknown>>;
   return {
     range: isRange(range)
       ? { min: range.min, max: range.max }
       : DEFAULT_SETTINGS.range,
-    answerStyle:
-      ANSWER_STYLES.find((style) => style === answerStyle) ??
-      DEFAULT_SETTINGS.answerStyle,
   };
 }
 
