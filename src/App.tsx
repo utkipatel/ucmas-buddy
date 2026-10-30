@@ -15,13 +15,14 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
-  function handleSettingsChange(newSettings: Settings) {
+  function handleSettingsSave(newSettings: Settings) {
     setSettings(newSettings);
     saveSettings(browserStorage(), newSettings);
+    setMenuOpen(false);
   }
 
-  // A new key gives StudyScreen a fresh start: changing a setting starts a
-  // new round with a 0 / 0 score, since scores at different settings
+  // A new key gives StudyScreen a fresh start: saving new settings starts
+  // a new round with a 0 / 0 score, since scores at different settings
   // can't be compared.
   const { range } = settings;
   const sessionKey = `${range.min}-${range.max}`;
@@ -46,7 +47,7 @@ export default function App() {
       {menuOpen && (
         <SettingsPanel
           settings={settings}
-          onChange={handleSettingsChange}
+          onSave={handleSettingsSave}
           onClose={closeMenu}
         />
       )}
