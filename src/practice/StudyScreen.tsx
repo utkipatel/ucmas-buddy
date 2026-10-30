@@ -1,4 +1,4 @@
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import Abacus from "../abacus/Abacus";
 import { numberToRods } from "../abacus/model";
 import { type DigitRange, generateNumber } from "./generator";
@@ -20,7 +20,23 @@ export default function StudyScreen({
   );
   const [typed, setTyped] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const { lastResult, score } = session;
+
+  // When the phone keyboard opens, the browser scrolls the answer box into
+  // view, which can push the abacus off the top. The visible area shrinks
+  // at that moment, so put the abacus back at the top of what's visible.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const keepAbacusVisible = () => {
+      if (document.activeElement === inputRef.current) {
+        sectionRef.current?.scrollIntoView({ block: "start" });
+      }
+    };
+    viewport.addEventListener("resize", keepAbacusVisible);
+    return () => viewport.removeEventListener("resize", keepAbacusVisible);
+  }, []);
 
   function handleAnswer(event: FormEvent) {
     event.preventDefault();
@@ -28,12 +44,13 @@ export default function StudyScreen({
     const newNumber = generateNumber(range, random);
     setSession((s) => answer(s, typed, newNumber));
     setTyped("");
-    // Keep the keyboard up on phones, ready for the next number.
-    inputRef.current?.focus();
+    // Keep the keyboard up on phones, ready for the next number, without
+    // letting the browser scroll the abacus away.
+    inputRef.current?.focus({ preventScroll: true });
   }
 
   return (
-    <section className="study">
+    <section className="study" ref={sectionRef}>
       <Abacus rods={numberToRods(session.number)} />
 
       <form className="answer" onSubmit={handleAnswer}>
