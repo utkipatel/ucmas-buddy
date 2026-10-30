@@ -36,17 +36,22 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
 - One branch and one pull request per task. Branch name:
   `<type>/<issue#>-short-name`, for example `feat/12-abacus-model`. Small
   changes without an issue use `<type>/short-name`.
-- PRs are squash-merged, and the PR title becomes the single commit on
-  `main`, so **PR titles must follow the commit format below**.
+- PRs are squash-merged into a single commit on `main`. The PR title becomes
+  the commit subject and the PR description becomes the commit body, so
+  **PR titles must follow the commit format below**, and PR descriptions
+  should read well as a commit body: what changed, why, and how to test.
+  Review discussion goes in PR comments, not the description.
 - GitHub deletes merged branches automatically. Locally, clean up with
   `git switch main && git pull && git fetch --prune`.
 - Never push to `main` directly or merge a pull request without asking.
 
 ## Commit messages (Conventional Commits)
 
-- Exactly **one line**: `type: description`. Lowercase, imperative, no
-  trailing period, at most 72 characters. No body and no trailers (no
-  `Co-Authored-By`).
+- **Subject line required:** `type: description`. Lowercase, imperative, no
+  trailing period, at most 72 characters.
+- **Body optional:** add one, after a blank line, only when the why isn't
+  obvious from the subject. Wrap at 72 characters.
+- No trailers (no `Co-Authored-By`).
 - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`.
 - Examples: `feat: add digit-to-bead conversion`,
   `docs: add study mode plan`, `chore: set up eslint and prettier`.
