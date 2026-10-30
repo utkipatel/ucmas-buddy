@@ -1,6 +1,6 @@
 # Epic 001: Study mode — Plan
 
-Status: **Draft**, waiting for review
+Status: **Approved**
 Spec: [spec.md](spec.md)
 
 ## 1. Stack
