@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import App from "./App";
 
@@ -24,6 +24,10 @@ function answerWrong() {
   });
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 }
+
+/** Waits for the panel's closing animation to finish. */
+const settingsClosed = () =>
+  waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 
 const rangeShown = () => [
   screen.getByLabelText<HTMLSelectElement>(/from/i).value,
@@ -55,14 +59,14 @@ describe("<App>", () => {
       "a tap outside",
       () => fireEvent.click(screen.getByTestId("drawer-backdrop")),
     ],
-  ])("closes settings with %s", (_, close) => {
+  ])("closes settings with %s", async (_, close) => {
     render(<App />);
     openSettings();
     close();
-    expect(screen.queryByRole("dialog")).toBeNull();
+    await settingsClosed();
   });
 
-  it("applies a change only when Save is tapped (AC7)", () => {
+  it("applies a change only when Save is tapped (AC7)", async () => {
     render(<App />);
     answerWrong();
     openSettings();
@@ -71,18 +75,19 @@ describe("<App>", () => {
     expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
 
     save();
-    expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
+    await settingsClosed();
     openSettings();
     expect(rangeShown()).toEqual(["2", "4"]);
   });
 
-  it("keeps the old settings when closed without saving (AC7)", () => {
+  it("keeps the old settings when closed without saving (AC7)", async () => {
     render(<App />);
     answerWrong();
     openSettings();
     pickRange("4", "5");
     fireEvent.keyDown(window, { key: "Escape" });
+    await settingsClosed();
 
     expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
     openSettings();

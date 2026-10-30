@@ -135,11 +135,13 @@ button.icon-button {
   color: var(--muted);
 }
 
-/* Settings: a panel that slides in from the left over the screen */
+/* Settings: a panel that slides in from the left over the screen.
+   Closing plays the reverse; CLOSE_MS in SettingsPanel.tsx matches it. */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
   background: rgb(43 26 14 / 40%);
+  animation: fade-in 0.3s ease-out;
 }
 
 .drawer {
@@ -151,12 +153,46 @@ button.icon-button {
   overflow-y: auto;
   background: var(--paper);
   box-shadow: 4px 0 16px rgb(0 0 0 / 20%);
-  animation: drawer-in 0.2s ease-out;
+  animation: slide-in 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-@keyframes drawer-in {
+.drawer-backdrop.closing {
+  pointer-events: none;
+  animation: fade-out 0.25s ease-in forwards;
+}
+
+.drawer-backdrop.closing .drawer {
+  animation: slide-out 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
   from {
     transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-backdrop,
+  .drawer {
+    animation-duration: 1ms !important;
   }
 }
 

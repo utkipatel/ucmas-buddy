@@ -18,7 +18,6 @@ export default function App() {
   function handleSettingsSave(newSettings: Settings) {
     setSettings(newSettings);
     saveSettings(browserStorage(), newSettings);
-    setMenuOpen(false);
   }
 
   // A new key gives StudyScreen a fresh start: saving new settings starts
