@@ -72,7 +72,7 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
 - Enforced by tools, not by hand: Prettier (formatting), ESLint (bug-prone
   code), TypeScript strict mode. CI runs them on every PR, and a PR can't be
   merged while checks fail.
-- Stack: Vite + TypeScript + Vitest (details in the epic's `plan.md`).
+- Stack: Vite + React + TypeScript + Vitest (details in the epic's `plan.md`).
 - Keep docs in plain, simple English. Refer to the person using the app as
   "the learner", never a specific person.
 
