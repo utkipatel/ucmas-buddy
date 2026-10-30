@@ -36,11 +36,16 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
 - One branch and one pull request per task. Branch name:
   `<type>/<issue#>-short-name`, for example `feat/12-abacus-model`. Small
   changes without an issue use `<type>/short-name`.
-- PRs are squash-merged into a single commit on `main`. The PR title becomes
-  the commit subject and the PR description becomes the commit body, so
-  **PR titles must follow the commit format below**, and PR descriptions
-  should read well as a commit body: what changed, why, and how to test.
-  Review discussion goes in PR comments, not the description.
+- The user picks the merge method for each PR. Two are enabled:
+  - **Squash** (the default): one commit on `main`. The PR title becomes
+    the commit subject and the PR description becomes the commit body.
+    Use it when the branch has work-in-progress or review-fix commits.
+  - **Rebase**: each branch commit lands on `main` as is. Use it when
+    every commit is a meaningful step worth keeping on its own.
+- So **PR titles must follow the commit format below**, PR descriptions
+  should read well as a commit body (what changed, why, how to test), and
+  every commit on a branch should be clean enough to land on `main` by
+  itself. Review discussion goes in PR comments, not the description.
 - Wrap PR description lines at 72 characters or fewer. GitHub rewraps
   longer lines in the squash commit body, which breaks sentences badly.
 - Start every comment Claude posts on GitHub (PR or issue) with
