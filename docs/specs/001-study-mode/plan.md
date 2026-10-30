@@ -32,7 +32,7 @@ src/
   practice/
     generator.ts           random numbers within a digit range
     session.ts             study mode round and score logic (pure)
-    StudyScreen.tsx        abacus, Reveal / Next, answer input, score
+    StudyScreen.tsx        abacus, answer input, Next, score
     SettingsPanel.tsx      side panel with digit range and answer style,
                            opened from a menu button in App's header
   settings.ts              load and save settings in browser storage
@@ -77,28 +77,23 @@ function generateNumber(range: DigitRange, random = Math.random): number;
 
 ```ts
 // practice/session.ts
-type AnswerStyle = "self-check" | "type-it";
-
 interface SessionState {
   number: number;
-  phase: "asking" | "revealed"; // self-check: revealed after Reveal
-  lastResult: { number: number; correct: boolean } | null; // type-it only
+  lastResult: { number: number; correct: boolean } | null;
   score: { correct: number; attempted: number };
 }
 
 // Pure functions: take a state, return a new one. StudyScreen keeps a
 // SessionState in useState and replaces it with the result.
-function reveal(s: SessionState): SessionState;            // self-check
-function next(s: SessionState, newNumber: number): SessionState; // self-check
-// type-it: score the typed answer and move to newNumber in one step
+// Score the typed answer and move to newNumber in one step.
 function answer(s: SessionState, typed: string, newNumber: number): SessionState;
 function resetScore(s: SessionState): SessionState;
 ```
 
 ```ts
 // settings.ts
-interface Settings { range: DigitRange; answerStyle: AnswerStyle }
-const DEFAULT_SETTINGS: Settings; // range 1-3, self-check
+interface Settings { range: DigitRange }
+const DEFAULT_SETTINGS: Settings; // range 1-3
 
 // Storage is passed in, so tests don't need a browser. Bad or missing
 // saved data falls back to the defaults.
@@ -122,10 +117,11 @@ function saveSettings(storage: Storage, s: Settings): void;
 |---|---|
 | AC1 bead layout | Unit tests on `numberToRods` (every digit, 1–6 digit numbers, bounds) plus an `<Abacus>` component test that counts beads on the beam per rod |
 | AC2 digit range | Unit tests on `generateNumber` with a fake `random`, plus a many-runs test |
-| AC3 self-check | Unit tests on `session.ts`, plus a `<StudyScreen>` test: number hidden until Reveal is clicked, no score shown |
-| AC4 type-it scoring | Unit tests on `answer` (right, wrong, extra spaces, empty input), plus a `<StudyScreen>` test that types answers |
-| AC5 fits on phone | Manual check at 360px wide in browser dev tools and on a real phone |
-| AC6 settings persist | Unit tests on `loadSettings` / `saveSettings` with a fake storage |
+| AC3 | Removed with self-check |
+| AC4 scoring | Unit tests on `answer` (right, wrong, extra spaces, empty input), plus a `<StudyScreen>` test that types answers |
+| AC5 fits on phone | Manual check at 360px wide in browser dev tools, and on a real phone with the number pad open (see section 7) |
+| AC6 settings persist | Unit tests on `loadSettings` / `saveSettings` with a fake storage, plus an `<App>` test that remounts the app |
+| AC7 Save applies settings | `<App>` tests: a change does nothing until Save; closing without Save keeps the old range |
 
 ## 6. Tasks
 
@@ -144,6 +140,15 @@ order, one PR each.
    `<App>`: buttons, answer input, score, settings. (AC3–AC6)
 8. **ci: deploy to GitHub Pages** — `deploy.yml`, Vite base path. (NFR)
 
+Follow-up tasks from phone testing after the first deploy:
+
+9. **feat: remove self-check, keypad answers only** (#28) — drop the
+   answer-style setting and the self-check screen. (AC3, AC4, AC6)
+10. **feat: apply settings with a save button** (#29) — the panel edits a
+    draft and only Save applies it. (AC7)
+11. **fix: keep the abacus visible when the phone keyboard opens** (#30)
+    (AC5)
+
 ## 7. Decisions and risks
 
 - **Type-it answer parsing:** ignore spaces and commas (so `1,234` and
@@ -154,3 +159,15 @@ order, one PR each.
   Settings then fall back to defaults instead of breaking the app.
 - **No end-to-end browser tests yet.** AC5 is checked by hand. If manual
   checks become tedious, a later epic can add Playwright.
+- **Old saved settings** may still contain an `answerStyle` field after
+  self-check is removed. `loadSettings` already ignores unknown fields, so
+  no migration is needed.
+- **Phone keyboard (#30):** when the number pad opens, phone browsers
+  scroll the focused input into view, which can push the abacus off the
+  top. Approach: keep the screen compact so the abacus and input fit above
+  the keyboard; when the input gets focus, scroll so the abacus sits at the
+  top of the visible area (using the browser's Visual Viewport API); and
+  refocus after each answer without scrolling. Browser keyboard behavior
+  can't be checked in tests, so it is checked on a real phone through the
+  dev server on the local network (`npm run dev -- --host`) before
+  merging.
