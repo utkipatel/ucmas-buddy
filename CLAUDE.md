@@ -58,8 +58,11 @@ Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
 
 ## Keeping diffs small
 
-- Aim for under about 300 changed lines per PR, not counting generated files
-  such as `package-lock.json`. If a task looks bigger, split the issue first.
+- Guideline, not a hard limit: aim for under about 300 changed lines per PR,
+  not counting generated files such as `package-lock.json`. If a task looks
+  much bigger, consider splitting the issue first. Larger PRs are fine when
+  splitting would make the change harder to follow; say why in the PR
+  description.
 - Each commit is one logical step that still builds and passes tests.
 - Don't mix in unrelated changes (formatting, renames, drive-by fixes). Put
   them in their own PR.
