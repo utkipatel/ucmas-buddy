@@ -1,5 +1,10 @@
 import { type FormEvent, useEffect, useState } from "react";
-import type { Settings } from "../settings";
+import {
+  roundSeconds,
+  type Settings,
+  VANISH_SECONDS,
+  type VanishSettings,
+} from "../settings";
 import { MAX_DIGITS, MIN_DIGITS } from "./generator";
 
 interface SettingsPanelProps {
@@ -28,9 +33,8 @@ export default function SettingsPanel({
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState(settings);
   const [closing, setClosing] = useState(false);
-  const { range } = draft;
-  const changed =
-    range.min !== settings.range.min || range.max !== settings.range.max;
+  const { range, vanish } = draft;
+  const changed = JSON.stringify(draft) !== JSON.stringify(settings);
 
   // Closing first plays the slide-out animation, then removes the panel.
   const close = () => setClosing(true);
@@ -53,6 +57,8 @@ export default function SettingsPanel({
     setDraft({ ...draft, range: { min, max: Math.max(min, range.max) } });
   const setMax = (max: number) =>
     setDraft({ ...draft, range: { min: Math.min(range.min, max), max } });
+  const setVanish = (change: Partial<VanishSettings>) =>
+    setDraft({ ...draft, vanish: { ...vanish, ...change } });
 
   function handleSave(event: FormEvent) {
     event.preventDefault();
@@ -114,6 +120,34 @@ export default function SettingsPanel({
                 ))}
               </select>
             </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Vanish mode</legend>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={vanish.enabled}
+                onChange={(e) => setVanish({ enabled: e.target.checked })}
+              />{" "}
+              Turn on vanish mode
+            </label>
+            {vanish.enabled && (
+              <label className="slider">
+                <span>Vanish after</span>
+                <input
+                  type="range"
+                  min={VANISH_SECONDS.min}
+                  max={VANISH_SECONDS.max}
+                  step={VANISH_SECONDS.step}
+                  value={vanish.seconds}
+                  onChange={(e) =>
+                    setVanish({ seconds: roundSeconds(Number(e.target.value)) })
+                  }
+                />
+                <output>{`${vanish.seconds.toFixed(1)} s`}</output>
+              </label>
+            )}
           </fieldset>
 
           <button type="submit" className="save" disabled={!changed}>

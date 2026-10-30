@@ -6,6 +6,7 @@ import {
   type Settings,
   SETTINGS_KEY,
   type SettingsStorage,
+  VANISH_SECONDS,
 } from "./settings";
 
 /** In-memory stand-in for the browser's localStorage. */
@@ -29,11 +30,19 @@ const brokenStorage: SettingsStorage = {
 
 const CUSTOM: Settings = {
   range: { min: 2, max: 5 },
+  vanish: { enabled: true, seconds: 1.2 },
 };
 
+/** Loads settings from storage holding the given saved value. */
+const loadSaved = (saved: unknown) =>
+  loadSettings(fakeStorage({ [SETTINGS_KEY]: JSON.stringify(saved) }));
+
 describe("settings", () => {
-  it("defaults to a 1-3 digit range", () => {
-    expect(DEFAULT_SETTINGS).toEqual({ range: { min: 1, max: 3 } });
+  it("defaults to a 1-3 digit range with vanish mode off at 0.5 s", () => {
+    expect(DEFAULT_SETTINGS).toEqual({
+      range: { min: 1, max: 3 },
+      vanish: { enabled: false, seconds: 0.5 },
+    });
   });
 
   it("uses the defaults when nothing is saved", () => {
@@ -77,5 +86,50 @@ describe("settings", () => {
     expect(loadSettings(undefined)).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(brokenStorage, CUSTOM)).not.toThrow();
     expect(() => saveSettings(undefined, CUSTOM)).not.toThrow();
+  });
+
+  describe("vanish settings (AC6)", () => {
+    it("loads settings saved before vanish mode existed with it off", () => {
+      expect(loadSaved({ range: CUSTOM.range })).toEqual({
+        range: CUSTOM.range,
+        vanish: DEFAULT_SETTINGS.vanish,
+      });
+    });
+
+    it.each([0.1, 3.1, -1, "1", null])(
+      "uses the default time for %j but keeps the switch",
+      (seconds) => {
+        expect(
+          loadSaved({ ...CUSTOM, vanish: { enabled: true, seconds } }),
+        ).toEqual({ ...CUSTOM, vanish: { enabled: true, seconds: 0.5 } });
+      },
+    );
+
+    it("uses the default switch for a value that isn't true or false", () => {
+      const saved = { ...CUSTOM, vanish: { enabled: "yes", seconds: 2 } };
+      expect(loadSaved(saved).vanish).toEqual({ enabled: false, seconds: 2 });
+    });
+
+    it("keeps the range when the vanish part is broken", () => {
+      expect(loadSaved({ ...CUSTOM, vanish: "fast" })).toEqual({
+        range: CUSTOM.range,
+        vanish: DEFAULT_SETTINGS.vanish,
+      });
+    });
+
+    it("rounds the time to one decimal place", () => {
+      const saved = {
+        ...CUSTOM,
+        vanish: { enabled: true, seconds: 0.1 + 0.2 },
+      };
+      expect(loadSaved(saved).vanish.seconds).toBe(0.3);
+    });
+
+    it("accepts both ends of the slider", () => {
+      for (const seconds of [VANISH_SECONDS.min, VANISH_SECONDS.max]) {
+        const saved = { ...CUSTOM, vanish: { enabled: true, seconds } };
+        expect(loadSaved(saved).vanish.seconds).toBe(seconds);
+      }
+    });
   });
 });

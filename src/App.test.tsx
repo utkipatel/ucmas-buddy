@@ -128,4 +128,67 @@ describe("<App>", () => {
     });
     expect(rangeShown()).toEqual(["5", "5"]);
   });
+
+  describe("vanish settings (AC5)", () => {
+    const vanishSwitch = () =>
+      screen.getByRole<HTMLInputElement>("checkbox", { name: /vanish/i });
+    const sliderLabel = { name: /vanish after/i };
+    /** The time slider; fails the test if it isn't shown. */
+    const slider = () =>
+      screen.getByRole<HTMLInputElement>("slider", sliderLabel);
+    const sliderIfShown = () =>
+      screen.queryByRole<HTMLInputElement>("slider", sliderLabel);
+
+    it("starts off, with the time slider hidden", () => {
+      render(<App />);
+      openSettings();
+      expect(vanishSwitch().checked).toBe(false);
+      expect(sliderIfShown()).toBeNull();
+    });
+
+    it("shows a 0.2-3.0 s slider at 0.5 s when switched on", () => {
+      render(<App />);
+      openSettings();
+      fireEvent.click(vanishSwitch());
+
+      const input = slider();
+      expect(input.min).toBe("0.2");
+      expect(input.max).toBe("3");
+      expect(input.step).toBe("0.1");
+      expect(input.value).toBe("0.5");
+      expect(screen.getByText("0.5 s")).toBeTruthy();
+    });
+
+    it("shows the value while dragging", () => {
+      render(<App />);
+      openSettings();
+      fireEvent.click(vanishSwitch());
+      fireEvent.change(slider(), { target: { value: "1.2" } });
+      expect(screen.getByText("1.2 s")).toBeTruthy();
+    });
+
+    it("enables Save when the switch changes", () => {
+      render(<App />);
+      openSettings();
+      const saveButton = screen.getByRole<HTMLButtonElement>("button", {
+        name: /save/i,
+      });
+      fireEvent.click(vanishSwitch());
+      expect(saveButton.disabled).toBe(false);
+    });
+
+    it("remembers the saved vanish settings after a reload (AC6)", () => {
+      const first = render(<App />);
+      openSettings();
+      fireEvent.click(vanishSwitch());
+      fireEvent.change(slider(), { target: { value: "2.4" } });
+      save();
+
+      first.unmount();
+      render(<App />);
+      openSettings();
+      expect(vanishSwitch().checked).toBe(true);
+      expect(slider().value).toBe("2.4");
+    });
+  });
 });
