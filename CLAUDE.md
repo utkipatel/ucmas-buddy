@@ -6,8 +6,12 @@ development with an industry-style GitHub workflow.
 
 ## Current work
 
-Epic 001, study mode: `docs/specs/001-study-mode/`, GitHub milestone
-"001 Study mode". Pick the lowest-numbered open task issue in that milestone.
+Epic 002, vanish mode: `docs/specs/002-vanish-mode/`, GitHub milestone
+"002 Vanish mode", epic issue #2. Pick the lowest-numbered open task issue
+in that milestone.
+
+Done: epic 001, study mode (`docs/specs/001-study-mode/`, frozen).
+Next in the backlog: modes and navigation (#27), then voice input (#5).
 
 ## Where things live
 
