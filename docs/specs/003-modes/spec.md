@@ -1,6 +1,6 @@
 # Epic 003: Play and test modes — Spec
 
-Status: **Approved**
+Status: **Done** (shipped 2026-10-31; frozen, do not edit)
 Last updated: 2026-10-31 (running score in Test, from review of PR #51)
 Epic issue: #27
 

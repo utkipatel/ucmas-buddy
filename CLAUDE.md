@@ -6,16 +6,15 @@ development with an industry-style GitHub workflow.
 
 ## Current work
 
-Epic 003, play and test modes: `docs/specs/003-modes/`, GitHub milestone
-"003 Play and test modes", epic issue #27. Pick the lowest-numbered open
-task issue in that milestone.
+Epic 004, voice input: epic issue #5. Its spec will be written in
+`docs/specs/004-voice-input/`; task issues follow once it is approved.
 
 Deploys to GitHub Pages are paused: the Deploy workflow is disabled on
 GitHub and the site is unpublished. Don't re-enable either without asking.
 
-Done (frozen): epic 001, study mode (`docs/specs/001-study-mode/`) and
-epic 002, vanish mode (`docs/specs/002-vanish-mode/`).
-Next in the backlog: voice input (#5).
+Done (frozen): epic 001, study mode (`docs/specs/001-study-mode/`),
+epic 002, vanish mode (`docs/specs/002-vanish-mode/`) and epic 003, play
+and test modes (`docs/specs/003-modes/`).
 
 ## Where things live
 
