@@ -23,7 +23,7 @@ function renderAt(hash: string) {
 const openMenu = () =>
   fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
 
-const heading = () => screen.getByRole("heading", { level: 1 }).textContent;
+const modeName = () => screen.getByTestId("mode-name").textContent;
 
 const openSettings = () =>
   fireEvent.click(screen.getByRole("button", { name: /open settings/i }));
@@ -57,6 +57,9 @@ const rangeShown = () => [
 describe("<App>", () => {
   it("starts with the answer box and settings closed", () => {
     render(<App />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
+      "UCMAS Buddy",
+    );
     expect(screen.getByLabelText(/your answer/i)).toBeTruthy();
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -237,14 +240,14 @@ describe("<App>", () => {
       ["#/test", "Test"],
     ])("shows the mode at %s (AC2)", async (hash, name) => {
       renderAt(hash);
-      await waitFor(() => expect(heading()).toBe(name));
+      await waitFor(() => expect(modeName()).toBe(name));
     });
 
     it.each(["", "#/", "#/nope"])(
       "shows Play for the address %j (AC2)",
       async (hash) => {
         renderAt(hash);
-        await waitFor(() => expect(heading()).toBe("Play"));
+        await waitFor(() => expect(modeName()).toBe("Play"));
         expect(window.location.hash).toBe("#/play");
         expect(screen.getByLabelText(/your answer/i)).toBeTruthy();
       },
@@ -263,7 +266,7 @@ describe("<App>", () => {
       openMenu();
       fireEvent.click(menuLink("test"));
 
-      expect(heading()).toBe("Test");
+      expect(modeName()).toBe("Test");
       expect(window.location.hash).toBe("#/test");
       await drawerClosed();
     });
