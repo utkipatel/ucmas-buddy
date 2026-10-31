@@ -1,7 +1,7 @@
 # Epic 003: Play and test modes — Spec
 
 Status: **Approved**
-Last updated: 2026-10-31
+Last updated: 2026-10-31 (running score in Test, from review of PR #51)
 Epic issue: #27
 
 ## 1. Purpose
@@ -52,9 +52,9 @@ works in both.
    vanish on or off) and a **Start** button.
 2. **During the test:** numbers appear and are answered like in Play
    (type, then Next), with vanish mode if it's on. The screen shows the
-   **time left** (for example `0:42`) and how many numbers have been
-   answered. There is no right/wrong message after each answer, so the
-   learner keeps their focus.
+   **time left** (for example `0:42`) and a **running score** (for
+   example `Score: 2 / 3`). After each answer, the right/wrong message
+   from Play says what the number was.
 3. **When time runs out:** answering stops right away. A number that was
    showing but not yet answered doesn't count.
 4. **Results:** correct / answered (for example `14 / 17`), then a list of
@@ -72,7 +72,8 @@ works in both.
 - **AC4:** After a reload, each mode's saved settings are the same as
   before. Settings saved before this epic appear as Play's settings.
 - **AC5:** In Test, Start begins a test of the set length; the time left
-  counts down and the answered count goes up with each answer.
+  counts down, and after each answer the score updates and the
+  right/wrong message shows, as in Play.
 - **AC6:** When the time is up, no more answers are accepted and the
   results show correct / answered and every answer, marked right or wrong.
   An unanswered last number isn't counted.
