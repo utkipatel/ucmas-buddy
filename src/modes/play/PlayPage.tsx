@@ -4,21 +4,21 @@ import SettingsPanel from "../../practice/SettingsPanel";
 import StudyScreen from "../../practice/StudyScreen";
 import {
   browserStorage,
-  loadSettings,
-  saveSettings,
-  type Settings,
+  loadPlaySettings,
+  type PlaySettings,
+  savePlaySettings,
 } from "../../settings";
 
 /** Open-ended practice with a running score. */
 export default function PlayPage() {
   const { settingsOpen, closeSettings } = usePageContext();
   const [settings, setSettings] = useState(() =>
-    loadSettings(browserStorage()),
+    loadPlaySettings(browserStorage()),
   );
 
-  function handleSettingsSave(newSettings: Settings) {
+  function handleSettingsSave(newSettings: PlaySettings) {
     setSettings(newSettings);
-    saveSettings(browserStorage(), newSettings);
+    savePlaySettings(browserStorage(), newSettings);
   }
 
   // A new key gives StudyScreen a fresh start: saving new settings starts
@@ -41,6 +41,7 @@ export default function PlayPage() {
       {settingsOpen && (
         <SettingsPanel
           settings={settings}
+          note="Saving starts a new number and resets the score."
           onSave={handleSettingsSave}
           onClose={closeSettings}
         />

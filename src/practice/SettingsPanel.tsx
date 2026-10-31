@@ -1,17 +1,23 @@
 import { useState } from "react";
 import Drawer from "../layout/Drawer";
 import {
+  type PlaySettings,
   roundSeconds,
-  type Settings,
+  TEST_MINUTES,
+  type TestMinutes,
+  type TestSettings,
   VANISH_SECONDS,
   type VanishSettings,
 } from "../settings";
 import { MAX_DIGITS, MIN_DIGITS } from "./generator";
 
-interface SettingsPanelProps {
-  settings: Settings;
+interface SettingsPanelProps<S extends PlaySettings> {
+  /** A mode's settings. Test settings also show the test length. */
+  settings: S;
+  /** Says what saving does, for example "Saving starts a new test." */
+  note: string;
   /** Called with the new settings when the learner taps Save. */
-  onSave: (settings: Settings) => void;
+  onSave: (settings: S) => void;
   onClose: () => void;
 }
 
@@ -24,13 +30,15 @@ const DIGIT_OPTIONS = Array.from(
  * Side panel with the settings. Changes are kept in a draft until Save;
  * closing (×, Escape, or a tap outside) throws the draft away.
  */
-export default function SettingsPanel({
+export default function SettingsPanel<S extends PlaySettings>({
   settings,
+  note,
   onSave,
   onClose,
-}: SettingsPanelProps) {
+}: SettingsPanelProps<S>) {
   const [draft, setDraft] = useState(settings);
   const { range, vanish } = draft;
+  const { minutes } = draft as Partial<TestSettings>;
   const changed = JSON.stringify(draft) !== JSON.stringify(settings);
 
   // Keep min <= max by moving the other end when needed.
@@ -40,6 +48,7 @@ export default function SettingsPanel({
     setDraft({ ...draft, range: { min: Math.min(range.min, max), max } });
   const setVanish = (change: Partial<VanishSettings>) =>
     setDraft({ ...draft, vanish: { ...vanish, ...change } });
+  const setMinutes = (minutes: TestMinutes) => setDraft({ ...draft, minutes });
 
   return (
     <Drawer
@@ -56,9 +65,28 @@ export default function SettingsPanel({
             close();
           }}
         >
-          <p className="note">
-            Saving starts a new number and resets the score.
-          </p>
+          <p className="note">{note}</p>
+
+          {minutes !== undefined && (
+            <fieldset>
+              <legend>Test</legend>
+              <label>
+                Length{" "}
+                <select
+                  value={minutes}
+                  onChange={(e) =>
+                    setMinutes(Number(e.target.value) as TestMinutes)
+                  }
+                >
+                  {TEST_MINUTES.map((m) => (
+                    <option key={m} value={m}>
+                      {m === 1 ? "1 minute" : `${m} minutes`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </fieldset>
+          )}
 
           <fieldset>
             <legend>Digits</legend>

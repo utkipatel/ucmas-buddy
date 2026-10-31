@@ -1,15 +1,37 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { usePageContext } from "../../layout/modes";
+import SettingsPanel from "../../practice/SettingsPanel";
+import {
+  browserStorage,
+  loadTestSettings,
+  saveTestSettings,
+  type TestSettings,
+} from "../../settings";
 
-/** Placeholder until the timed test is built. */
+/** The timed test. For now only its settings; the test itself comes next. */
 export default function TestPage() {
-  const { setSettingsDisabled } = usePageContext();
+  const { settingsOpen, closeSettings } = usePageContext();
+  const [settings, setSettings] = useState(() =>
+    loadTestSettings(browserStorage()),
+  );
 
-  // Test settings don't exist yet, so there is nothing to open.
-  useEffect(() => {
-    setSettingsDisabled(true);
-    return () => setSettingsDisabled(false);
-  }, [setSettingsDisabled]);
+  function handleSettingsSave(newSettings: TestSettings) {
+    setSettings(newSettings);
+    saveTestSettings(browserStorage(), newSettings);
+  }
 
-  return <p className="placeholder">The timed test is coming soon.</p>;
+  return (
+    <>
+      <p className="placeholder">The timed test is coming soon.</p>
+
+      {settingsOpen && (
+        <SettingsPanel
+          settings={settings}
+          note="Saving starts a new test."
+          onSave={handleSettingsSave}
+          onClose={closeSettings}
+        />
+      )}
+    </>
+  );
 }

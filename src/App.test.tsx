@@ -283,13 +283,76 @@ describe("<App>", () => {
       fireEvent.click(menuLink("play"));
       expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
     });
+  });
 
-    it("has no settings to open in Test yet", () => {
+  describe("settings per mode (AC3)", () => {
+    const testLength = () =>
+      screen.queryByLabelText<HTMLSelectElement>(/length/i);
+
+    /** Goes to another mode through the side menu. */
+    async function goTo(name: string) {
+      openMenu();
+      fireEvent.click(
+        screen.getByRole("link", { name: new RegExp(`^${name}$`, "i") }),
+      );
+      await drawerClosed();
+    }
+
+    it("offers a 1, 2, 3 or 5 minute test, 1 by default, in Test only", () => {
       renderAt("#/test");
-      const button = screen.getByRole<HTMLButtonElement>("button", {
-        name: /open settings/i,
+      openSettings();
+      const select = testLength();
+      expect(select?.value).toBe("1");
+      expect([...(select?.options ?? [])].map((o) => o.text)).toEqual([
+        "1 minute",
+        "2 minutes",
+        "3 minutes",
+        "5 minutes",
+      ]);
+      expect(screen.getByText(/starts a new test/i)).toBeTruthy();
+    });
+
+    it("has no test length in Play", () => {
+      renderAt("#/play");
+      openSettings();
+      expect(testLength()).toBeNull();
+    });
+
+    it("keeps Play's settings when Test's are saved", async () => {
+      renderAt("#/play");
+      openSettings();
+      pickRange("2", "4");
+      save();
+      await drawerClosed();
+
+      await goTo("test");
+      openSettings();
+      expect(rangeShown()).toEqual(["1", "3"]);
+      pickRange("5", "6");
+      fireEvent.change(screen.getByLabelText(/length/i), {
+        target: { value: "3" },
       });
-      expect(button.disabled).toBe(true);
+      save();
+      await drawerClosed();
+
+      await goTo("play");
+      openSettings();
+      expect(rangeShown()).toEqual(["2", "4"]);
+    });
+
+    it("remembers Test's settings after a reload (AC4)", async () => {
+      const first = renderAt("#/test");
+      openSettings();
+      fireEvent.change(screen.getByLabelText(/length/i), {
+        target: { value: "5" },
+      });
+      save();
+      await drawerClosed();
+
+      first.unmount();
+      renderAt("#/test");
+      openSettings();
+      expect(testLength()?.value).toBe("5");
     });
   });
 });
