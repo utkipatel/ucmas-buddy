@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { MARKER_RODS, type Rod } from "./model";
 
 // Drawing units (the SVG scales to fit the screen, so these are relative).
@@ -28,17 +29,28 @@ const COLORS = {
   beadEdge: "#4a2410",
 };
 
+/** Vanish mode: beads can fade out and then be left out entirely. */
+export type BeadVisibility = "shown" | "fading" | "hidden";
+
 interface AbacusProps {
   rods: Rod[];
+  beads?: BeadVisibility;
+  /** How long the fade takes, when `beads` is "fading". */
+  fadeMs?: number;
 }
 
-export default function Abacus({ rods }: AbacusProps) {
+export default function Abacus({
+  rods,
+  beads = "shown",
+  fadeMs = 0,
+}: AbacusProps) {
   const width = 2 * FRAME + rods.length * ROD_SPACING;
   const height = LOWER_FRAME_TOP + FRAME;
 
   return (
     <svg
-      className="abacus"
+      className={beads === "fading" ? "abacus beads-fading" : "abacus"}
+      style={{ "--bead-fade": `${fadeMs}ms` } as CSSProperties}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       aria-label="Abacus"
@@ -56,6 +68,7 @@ export default function Abacus({ rods }: AbacusProps) {
         <RodDrawing
           key={index}
           rod={rod}
+          beadsHidden={beads === "hidden"}
           x={FRAME + (index + 0.5) * ROD_SPACING}
         />
       ))}
@@ -82,7 +95,15 @@ export default function Abacus({ rods }: AbacusProps) {
   );
 }
 
-function RodDrawing({ rod, x }: { rod: Rod; x: number }) {
+function RodDrawing({
+  rod,
+  x,
+  beadsHidden,
+}: {
+  rod: Rod;
+  x: number;
+  beadsHidden: boolean;
+}) {
   // Upper bead: against the beam when on, against the top frame at rest.
   const upperY = rod.upper
     ? BEAM_TOP - GAP - BEAD_HEIGHT / 2
@@ -106,10 +127,14 @@ function RodDrawing({ rod, x }: { rod: Rod; x: number }) {
         stroke={COLORS.rod}
         strokeWidth={2}
       />
-      <Bead kind="upper" x={x} y={upperY} onBeam={rod.upper} />
-      {lowerYs.map((y, i) => (
-        <Bead key={i} kind="lower" x={x} y={y} onBeam={i < rod.lower} />
-      ))}
+      {!beadsHidden && (
+        <>
+          <Bead kind="upper" x={x} y={upperY} onBeam={rod.upper} />
+          {lowerYs.map((y, i) => (
+            <Bead key={i} kind="lower" x={x} y={y} onBeam={i < rod.lower} />
+          ))}
+        </>
+      )}
     </g>
   );
 }
