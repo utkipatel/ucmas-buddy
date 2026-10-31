@@ -9,7 +9,21 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  window.history.replaceState(null, "", "/");
+});
+
+/** Renders the app as if opened at the given address, e.g. "#/test". */
+function renderAt(hash: string) {
+  window.history.replaceState(null, "", `/${hash}`);
+  return render(<App />);
+}
+
+const openMenu = () =>
+  fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+
+const heading = () => screen.getByRole("heading", { level: 1 }).textContent;
 
 const openSettings = () =>
   fireEvent.click(screen.getByRole("button", { name: /open settings/i }));
@@ -31,8 +45,8 @@ function answerWrong() {
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 }
 
-/** Waits for the panel's closing animation to finish. */
-const settingsClosed = () =>
+/** Waits for the open drawer's closing animation to finish. */
+const drawerClosed = () =>
   waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 
 const rangeShown = () => [
@@ -48,7 +62,7 @@ describe("<App>", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("opens settings from the header menu button", () => {
+  it("opens settings from the header settings button", () => {
     render(<App />);
     openSettings();
     expect(screen.getByRole("dialog", { name: /settings/i })).toBeTruthy();
@@ -69,7 +83,7 @@ describe("<App>", () => {
     render(<App />);
     openSettings();
     close();
-    await settingsClosed();
+    await drawerClosed();
   });
 
   it("applies a change only when Save is tapped (AC7)", async () => {
@@ -82,7 +96,7 @@ describe("<App>", () => {
 
     save();
     expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
-    await settingsClosed();
+    await drawerClosed();
     openSettings();
     expect(rangeShown()).toEqual(["2", "4"]);
   });
@@ -93,7 +107,7 @@ describe("<App>", () => {
     openSettings();
     pickRange("4", "5");
     fireEvent.keyDown(window, { key: "Escape" });
-    await settingsClosed();
+    await drawerClosed();
 
     expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
     openSettings();
@@ -211,6 +225,68 @@ describe("<App>", () => {
       openSettings();
       expect(vanishSwitch().checked).toBe(true);
       expect(slider().value).toBe("2.4");
+    });
+  });
+
+  describe("navigation", () => {
+    const menuLink = (name: string) =>
+      screen.getByRole("link", { name: new RegExp(`^${name}$`, "i") });
+
+    it.each([
+      ["#/play", "Play"],
+      ["#/test", "Test"],
+    ])("shows the mode at %s (AC2)", async (hash, name) => {
+      renderAt(hash);
+      await waitFor(() => expect(heading()).toBe(name));
+    });
+
+    it.each(["", "#/", "#/nope"])(
+      "shows Play for the address %j (AC2)",
+      async (hash) => {
+        renderAt(hash);
+        await waitFor(() => expect(heading()).toBe("Play"));
+        expect(window.location.hash).toBe("#/play");
+        expect(screen.getByLabelText(/your answer/i)).toBeTruthy();
+      },
+    );
+
+    it("lists both modes in the menu and marks the current one (AC1)", () => {
+      renderAt("#/play");
+      openMenu();
+      expect(screen.getByRole("dialog", { name: /ucmas buddy/i })).toBeTruthy();
+      expect(menuLink("play").getAttribute("aria-current")).toBe("page");
+      expect(menuLink("test").getAttribute("aria-current")).toBeNull();
+    });
+
+    it("goes to the tapped mode and closes the menu (AC1)", async () => {
+      renderAt("#/play");
+      openMenu();
+      fireEvent.click(menuLink("test"));
+
+      expect(heading()).toBe("Test");
+      expect(window.location.hash).toBe("#/test");
+      await drawerClosed();
+    });
+
+    it("starts Play over after leaving it", async () => {
+      renderAt("#/play");
+      answerWrong();
+      expect(screen.getByText("Score: 0 / 1")).toBeTruthy();
+
+      openMenu();
+      fireEvent.click(menuLink("test"));
+      await drawerClosed();
+      openMenu();
+      fireEvent.click(menuLink("play"));
+      expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
+    });
+
+    it("has no settings to open in Test yet", () => {
+      renderAt("#/test");
+      const button = screen.getByRole<HTMLButtonElement>("button", {
+        name: /open settings/i,
+      });
+      expect(button.disabled).toBe(true);
     });
   });
 });
