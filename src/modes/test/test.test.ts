@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   answerInTest,
   finishIfTimeUp,
+  formatTimeLeft,
   READY,
   results,
   startTest,
@@ -121,5 +122,19 @@ describe("test rules", () => {
     expect(finished.answers).toHaveLength(1);
     expect(again.answers).toEqual([]);
     expect(timeLeftMs(again, later)).toBe(MINUTE);
+  });
+});
+
+describe("formatTimeLeft", () => {
+  it.each([
+    [60_000, "1:00"],
+    [42_000, "0:42"],
+    [41_001, "0:42"],
+    [125_000, "2:05"],
+    [300_000, "5:00"],
+    [999, "0:01"],
+    [0, "0:00"],
+  ])("shows %i ms as %s", (ms, text) => {
+    expect(formatTimeLeft(ms)).toBe(text);
   });
 });

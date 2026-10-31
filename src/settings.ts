@@ -37,6 +37,11 @@ export const DEFAULT_TEST_SETTINGS: TestSettings = {
 /** The vanish time slider's range, in seconds. */
 export const VANISH_SECONDS = { min: 0.2, max: 3, step: 0.1 } as const;
 
+/** Vanish mode's time in ms, or null when vanish mode is off. */
+export function vanishAfterMs({ vanish }: PlaySettings): number | null {
+  return vanish.enabled ? Math.round(vanish.seconds * 1000) : null;
+}
+
 /** Rounds to one decimal place, so 0.1 + 0.2 shows as 0.3. */
 export function roundSeconds(seconds: number): number {
   return Math.round(seconds * 10) / 10;

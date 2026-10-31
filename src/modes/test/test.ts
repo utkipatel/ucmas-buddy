@@ -108,3 +108,10 @@ export function results(state: TestState): {
 function isTimeUp(state: TestState, now: number): boolean {
   return state.endsAt !== null && now >= state.endsAt;
 }
+
+/** Shows time left as minutes and seconds, like "0:42", rounding up. */
+export function formatTimeLeft(ms: number): string {
+  const seconds = Math.ceil(ms / 1000);
+  const rest = seconds % 60;
+  return `${Math.floor(seconds / 60)}:${rest < 10 ? "0" : ""}${rest}`;
+}
