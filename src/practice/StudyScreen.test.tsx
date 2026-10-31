@@ -133,6 +133,20 @@ describe("<StudyScreen> in vanish mode", () => {
     expect(screen.getAllByTestId("rod")).toHaveLength(11); // frame stays
   });
 
+  it("fades the beads during the end of the vanish time (AC2)", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    const fading = () =>
+      document.querySelector(".abacus")?.classList.contains("beads-fading");
+
+    wait(299);
+    expect(fading()).toBe(false);
+    wait(1); // 500 ms vanish time fades over its last 200 ms
+    expect(fading()).toBe(true);
+    expect(beadCount()).toBe(ALL_BEADS); // still drawn while fading
+    wait(200);
+    expect(beadCount()).toBe(0);
+  });
+
   it("shows each new number, then hides it again (AC3)", () => {
     render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
     wait(500);

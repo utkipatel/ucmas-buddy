@@ -80,11 +80,21 @@ describe("<Abacus>", () => {
     const svg = container.querySelector("svg");
     const viewBox = svg?.getAttribute("viewBox");
 
-    rerender(<Abacus rods={numberToRods(342)} beadsHidden />);
+    rerender(<Abacus rods={numberToRods(342)} beads="hidden" />);
     expect(container.querySelector("svg")).toBe(svg); // same element
     expect(svg?.getAttribute("viewBox")).toBe(viewBox);
     expect(container.querySelectorAll("[data-bead]")).toHaveLength(0);
     expect(screen.getAllByTestId("rod")).toHaveLength(ROD_COUNT);
     expect(screen.getAllByTestId("marker")).toHaveLength(MARKER_RODS.length);
+  });
+
+  it("marks the beads as fading, with the fade time, while they fade", () => {
+    const { container } = render(
+      <Abacus rods={numberToRods(342)} beads="fading" fadeMs={200} />,
+    );
+    const svg = container.querySelector("svg");
+    expect(svg?.classList.contains("beads-fading")).toBe(true);
+    expect(svg?.style.getPropertyValue("--bead-fade")).toBe("200ms");
+    expect(container.querySelectorAll("[data-bead]").length).toBeGreaterThan(0);
   });
 });

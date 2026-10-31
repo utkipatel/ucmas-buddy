@@ -42,6 +42,18 @@ body {
   height: auto;
 }
 
+/* Vanish mode: beads fade out over --bead-fade, set by the component */
+.abacus.beads-fading [data-bead] {
+  opacity: 0;
+  transition: opacity var(--bead-fade) ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abacus.beads-fading [data-bead] {
+    opacity: 1;
+  }
+}
+
 /* Buttons */
 button {
   font: inherit;
