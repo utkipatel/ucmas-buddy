@@ -7,6 +7,7 @@ import {
   loadPlaySettings,
   type PlaySettings,
   savePlaySettings,
+  vanishAfterMs,
 } from "../../settings";
 
 /** Open-ended practice with a running score. */
@@ -24,19 +25,13 @@ export default function PlayPage() {
   // A new key gives StudyScreen a fresh start: saving new settings starts
   // a new round with a 0 / 0 score, since scores at different settings
   // can't be compared.
-  const { range, vanish } = settings;
-  const vanishAfterMs = vanish.enabled
-    ? Math.round(vanish.seconds * 1000)
-    : null;
-  const sessionKey = `${range.min}-${range.max}-${vanishAfterMs}`;
+  const { range } = settings;
+  const vanishMs = vanishAfterMs(settings);
+  const sessionKey = `${range.min}-${range.max}-${vanishMs}`;
 
   return (
     <>
-      <StudyScreen
-        key={sessionKey}
-        range={range}
-        vanishAfterMs={vanishAfterMs}
-      />
+      <StudyScreen key={sessionKey} range={range} vanishAfterMs={vanishMs} />
 
       {settingsOpen && (
         <SettingsPanel

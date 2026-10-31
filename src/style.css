@@ -54,12 +54,6 @@ button.icon-button:disabled {
   cursor: not-allowed;
 }
 
-.placeholder {
-  margin: 48px 0;
-  text-align: center;
-  color: var(--muted);
-}
-
 .abacus {
   display: block;
   width: 100%;
@@ -324,4 +318,62 @@ button.icon-button {
 .nav-menu a[aria-current="page"] {
   background: var(--line);
   font-weight: 700;
+}
+
+/* Test mode: the summary and results panels, and the status line */
+.test-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0;
+  text-align: center;
+}
+
+.test-panel h2,
+.test-summary {
+  margin: 0;
+}
+
+.test-status {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.test-status [role="timer"] {
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.test-score {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.test-answers {
+  width: min(100%, 320px);
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.test-answers li {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.test-answers li.correct {
+  color: var(--correct);
+}
+
+.test-answers li.wrong {
+  color: var(--wrong);
 }
