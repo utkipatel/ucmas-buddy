@@ -4,7 +4,7 @@ import { MODES, type PageContext } from "./modes";
 import NavMenu from "./NavMenu";
 
 /**
- * The header (menu button, mode name, settings button) around the current
+ * The header (menu button, app and mode name, settings button) around the current
  * page. The page itself shows its settings panel when asked to.
  */
 export default function Layout() {
@@ -38,7 +38,10 @@ export default function Layout() {
         >
           ☰
         </button>
-        <h1>{title}</h1>
+        <h1>UCMAS Buddy</h1>
+        <span className="mode-name" data-testid="mode-name">
+          {title}
+        </span>
         <button
           type="button"
           className="icon-button settings-button"
