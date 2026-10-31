@@ -1,6 +1,6 @@
 # Epic 003: Play and test modes — Plan
 
-Status: **Draft**, waiting for review
+Status: **Approved**
 Spec: [spec.md](spec.md)
 
 ## 1. New library: React Router
