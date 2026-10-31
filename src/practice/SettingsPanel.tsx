@@ -1,4 +1,5 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { useState } from "react";
+import Drawer from "../layout/Drawer";
 import {
   roundSeconds,
   type Settings,
@@ -13,9 +14,6 @@ interface SettingsPanelProps {
   onSave: (settings: Settings) => void;
   onClose: () => void;
 }
-
-/** How long the closing animation runs; matches `.closing` in style.css. */
-export const CLOSE_MS = 250;
 
 const DIGIT_OPTIONS = Array.from(
   { length: MAX_DIGITS - MIN_DIGITS + 1 },
@@ -32,25 +30,8 @@ export default function SettingsPanel({
   onClose,
 }: SettingsPanelProps) {
   const [draft, setDraft] = useState(settings);
-  const [closing, setClosing] = useState(false);
   const { range, vanish } = draft;
   const changed = JSON.stringify(draft) !== JSON.stringify(settings);
-
-  // Closing first plays the slide-out animation, then removes the panel.
-  const close = () => setClosing(true);
-  useEffect(() => {
-    if (!closing) return;
-    const timer = setTimeout(onClose, CLOSE_MS);
-    return () => clearTimeout(timer);
-  }, [closing, onClose]);
-
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setClosing(true);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, []);
 
   // Keep min <= max by moving the other end when needed.
   const setMin = (min: number) =>
@@ -60,38 +41,21 @@ export default function SettingsPanel({
   const setVanish = (change: Partial<VanishSettings>) =>
     setDraft({ ...draft, vanish: { ...vanish, ...change } });
 
-  function handleSave(event: FormEvent) {
-    event.preventDefault();
-    onSave(draft);
-    close();
-  }
-
   return (
-    <div
-      className={closing ? "drawer-backdrop closing" : "drawer-backdrop"}
-      data-testid="drawer-backdrop"
-      onClick={(event) => event.target === event.currentTarget && close()}
+    <Drawer
+      title="Settings"
+      closeLabel="Close settings"
+      side="right"
+      onClose={onClose}
     >
-      <aside
-        className="drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-title"
-      >
-        <div className="drawer-header">
-          <h2 id="settings-title">Settings</h2>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="Close settings"
-            onClick={close}
-            autoFocus
-          >
-            ×
-          </button>
-        </div>
-
-        <form onSubmit={handleSave}>
+      {(close) => (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSave(draft);
+            close();
+          }}
+        >
           <p className="note">
             Saving starts a new number and resets the score.
           </p>
@@ -154,7 +118,7 @@ export default function SettingsPanel({
             Save
           </button>
         </form>
-      </aside>
-    </div>
+      )}
+    </Drawer>
   );
 }
