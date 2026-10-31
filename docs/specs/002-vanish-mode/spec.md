@@ -1,6 +1,6 @@
 # Epic 002: Vanish mode — Spec
 
-Status: **Approved**
+Status: **Done** (shipped 2026-10-31; frozen, do not edit)
 Last updated: 2026-10-30 (smooth fade, from review of PR #41)
 Epic issue: #2
 

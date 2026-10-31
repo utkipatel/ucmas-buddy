@@ -1,6 +1,6 @@
 # Epic 002: Vanish mode — Plan
 
-Status: **Approved**
+Status: **Done** (shipped 2026-10-31; frozen, do not edit)
 Spec: [spec.md](spec.md)
 
 ## 1. Approach
