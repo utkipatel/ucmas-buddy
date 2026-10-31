@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePageContext } from "../../layout/modes";
 import Exercise from "../../practice/Exercise";
 import { generateNumber } from "../../practice/generator";
+import ResultLine from "../../practice/ResultLine";
 import SettingsPanel from "../../practice/SettingsPanel";
 import {
   browserStorage,
@@ -32,6 +33,7 @@ export default function TestPage() {
   const [test, setTest] = useState(READY);
   const [now, setNow] = useState(() => Date.now());
   const running = test.phase === "running";
+  const score = results(test);
 
   // Settings can't change mid-test (spec F2).
   useEffect(() => {
@@ -86,14 +88,19 @@ export default function TestPage() {
             <span role="timer" aria-label="Time left">
               {formatTimeLeft(timeLeftMs(test, now))}
             </span>
-            <span>{`Answered: ${test.answers.length}`}</span>
+            <span>{`Score: ${score.correct} / ${score.answered}`}</span>
           </p>
           <Exercise
             number={test.number}
             onAnswer={handleAnswer}
             vanishAfterMs={vanishAfterMs(settings)}
             autoFocus
-          />
+          >
+            <ResultLine
+              result={test.answers.at(-1) ?? null}
+              count={score.answered}
+            />
+          </Exercise>
         </>
       )}
 
