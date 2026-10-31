@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 beforeEach(() => localStorage.clear());
@@ -175,6 +181,22 @@ describe("<App>", () => {
       });
       fireEvent.click(vanishSwitch());
       expect(saveButton.disabled).toBe(false);
+    });
+
+    it("vanishes the beads once vanish mode is saved", () => {
+      vi.useFakeTimers();
+      try {
+        render(<App />);
+        openSettings();
+        fireEvent.click(vanishSwitch());
+        save();
+        const beads = () => document.querySelectorAll("[data-bead]").length;
+        expect(beads()).toBeGreaterThan(0);
+        act(() => vi.advanceTimersByTime(500));
+        expect(beads()).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it("remembers the saved vanish settings after a reload (AC6)", () => {

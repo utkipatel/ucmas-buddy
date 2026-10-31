@@ -74,4 +74,17 @@ describe("<Abacus>", () => {
       2 * BEAD_HEIGHT,
     );
   });
+
+  it("can hide the beads while keeping the frame and size (AC4)", () => {
+    const { container, rerender } = render(<Abacus rods={numberToRods(342)} />);
+    const svg = container.querySelector("svg");
+    const viewBox = svg?.getAttribute("viewBox");
+
+    rerender(<Abacus rods={numberToRods(342)} beadsHidden />);
+    expect(container.querySelector("svg")).toBe(svg); // same element
+    expect(svg?.getAttribute("viewBox")).toBe(viewBox);
+    expect(container.querySelectorAll("[data-bead]")).toHaveLength(0);
+    expect(screen.getAllByTestId("rod")).toHaveLength(ROD_COUNT);
+    expect(screen.getAllByTestId("marker")).toHaveLength(MARKER_RODS.length);
+  });
 });

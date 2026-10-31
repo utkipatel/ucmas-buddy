@@ -30,9 +30,11 @@ const COLORS = {
 
 interface AbacusProps {
   rods: Rod[];
+  /** Vanish mode: leave out the beads but keep everything else. */
+  beadsHidden?: boolean;
 }
 
-export default function Abacus({ rods }: AbacusProps) {
+export default function Abacus({ rods, beadsHidden = false }: AbacusProps) {
   const width = 2 * FRAME + rods.length * ROD_SPACING;
   const height = LOWER_FRAME_TOP + FRAME;
 
@@ -56,6 +58,7 @@ export default function Abacus({ rods }: AbacusProps) {
         <RodDrawing
           key={index}
           rod={rod}
+          beadsHidden={beadsHidden}
           x={FRAME + (index + 0.5) * ROD_SPACING}
         />
       ))}
@@ -82,7 +85,15 @@ export default function Abacus({ rods }: AbacusProps) {
   );
 }
 
-function RodDrawing({ rod, x }: { rod: Rod; x: number }) {
+function RodDrawing({
+  rod,
+  x,
+  beadsHidden,
+}: {
+  rod: Rod;
+  x: number;
+  beadsHidden: boolean;
+}) {
   // Upper bead: against the beam when on, against the top frame at rest.
   const upperY = rod.upper
     ? BEAM_TOP - GAP - BEAD_HEIGHT / 2
@@ -106,10 +117,14 @@ function RodDrawing({ rod, x }: { rod: Rod; x: number }) {
         stroke={COLORS.rod}
         strokeWidth={2}
       />
-      <Bead kind="upper" x={x} y={upperY} onBeam={rod.upper} />
-      {lowerYs.map((y, i) => (
-        <Bead key={i} kind="lower" x={x} y={y} onBeam={i < rod.lower} />
-      ))}
+      {!beadsHidden && (
+        <>
+          <Bead kind="upper" x={x} y={upperY} onBeam={rod.upper} />
+          {lowerYs.map((y, i) => (
+            <Bead key={i} kind="lower" x={x} y={y} onBeam={i < rod.lower} />
+          ))}
+        </>
+      )}
     </g>
   );
 }

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeRandom } from "../test/fakeRandom";
 import StudyScreen from "./StudyScreen";
 
@@ -105,5 +105,65 @@ describe("<StudyScreen> with the phone keyboard open (AC5)", () => {
     viewport.dispatchEvent(new Event("resize")); // e.g. rotating the phone
 
     expect(scrolls().calls).toHaveLength(0);
+  });
+});
+
+describe("<StudyScreen> in vanish mode", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  const beadCount = () => document.querySelectorAll("[data-bead]").length;
+  const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+  const ALL_BEADS = 11 * 5;
+
+  it("keeps the beads when vanish mode is off (AC1)", () => {
+    render(
+      <StudyScreen range={range} random={random()} vanishAfterMs={null} />,
+    );
+    wait(10_000);
+    expect(beadCount()).toBe(ALL_BEADS);
+  });
+
+  it("hides the beads exactly after the vanish time (AC2)", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    wait(499);
+    expect(beadCount()).toBe(ALL_BEADS);
+    wait(1);
+    expect(beadCount()).toBe(0);
+    expect(screen.getAllByTestId("rod")).toHaveLength(11); // frame stays
+  });
+
+  it("shows each new number, then hides it again (AC3)", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    wait(500);
+    answerWith("100");
+    expect(beadCount()).toBe(ALL_BEADS);
+    wait(500);
+    expect(beadCount()).toBe(0);
+  });
+
+  it("isn't restarted by typing", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    wait(300);
+    fireEvent.change(screen.getByLabelText(/your answer/i), {
+      target: { value: "1" },
+    });
+    wait(200);
+    expect(beadCount()).toBe(0);
+  });
+
+  it("doesn't bring a vanished number back when the score is reset", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    wait(500);
+    click(/reset/i);
+    expect(beadCount()).toBe(0);
+  });
+
+  it("keeps the answer box in place when the beads vanish (AC4)", () => {
+    render(<StudyScreen range={range} random={random()} vanishAfterMs={500} />);
+    const box = screen.getByLabelText(/your answer/i);
+    wait(500);
+    expect(screen.getByLabelText(/your answer/i)).toBe(box); // same element
+    expect(document.querySelector(".abacus")).not.toBeNull();
   });
 });

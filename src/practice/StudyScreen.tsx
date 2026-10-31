@@ -6,6 +6,8 @@ import { answer, resetScore, startSession } from "./session";
 
 interface StudyScreenProps {
   range: DigitRange;
+  /** Vanish mode: hide the beads this long after each number appears. */
+  vanishAfterMs?: number | null;
   /** Replaces Math.random in tests. */
   random?: () => number;
 }
@@ -13,6 +15,7 @@ interface StudyScreenProps {
 /** The abacus, the answer box, and the running score. */
 export default function StudyScreen({
   range,
+  vanishAfterMs = null,
   random = Math.random,
 }: StudyScreenProps) {
   const [session, setSession] = useState(() =>
@@ -21,6 +24,16 @@ export default function StudyScreen({
   const [typed, setTyped] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Vanish mode. `round` goes up with every answer, so each number gets
+  // its full showing, even if the same number comes up twice in a row.
+  const [round, setRound] = useState(0);
+  const [beadsHidden, setBeadsHidden] = useState(false);
+  useEffect(() => {
+    if (vanishAfterMs === null) return;
+    const timer = setTimeout(() => setBeadsHidden(true), vanishAfterMs);
+    return () => clearTimeout(timer);
+  }, [round, vanishAfterMs]);
   const { lastResult, score } = session;
 
   // When the phone keyboard opens, the browser scrolls the answer box into
@@ -44,6 +57,8 @@ export default function StudyScreen({
     const newNumber = generateNumber(range, random);
     setSession((s) => answer(s, typed, newNumber));
     setTyped("");
+    setRound((r) => r + 1);
+    setBeadsHidden(false);
     // Keep the keyboard up on phones, ready for the next number, without
     // letting the browser scroll the abacus away.
     inputRef.current?.focus({ preventScroll: true });
@@ -51,7 +66,7 @@ export default function StudyScreen({
 
   return (
     <section className="study" ref={sectionRef}>
-      <Abacus rods={numberToRods(session.number)} />
+      <Abacus rods={numberToRods(session.number)} beadsHidden={beadsHidden} />
 
       <form className="answer" onSubmit={handleAnswer}>
         <label htmlFor="answer">Your answer</label>
