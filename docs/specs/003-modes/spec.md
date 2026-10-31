@@ -1,6 +1,6 @@
 # Epic 003: Play and test modes — Spec
 
-Status: **Draft**, waiting for review
+Status: **Approved**
 Last updated: 2026-10-31
 Epic issue: #27
 

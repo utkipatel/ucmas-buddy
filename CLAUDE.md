@@ -6,8 +6,12 @@ development with an industry-style GitHub workflow.
 
 ## Current work
 
-Epic 003, modes and navigation: epic issue #27. Its spec is being written
-in `docs/specs/003-modes/`; task issues follow once it is approved.
+Epic 003, play and test modes: `docs/specs/003-modes/`, GitHub milestone
+"003 Play and test modes", epic issue #27. Pick the lowest-numbered open
+task issue in that milestone.
+
+Deploys to GitHub Pages are paused: the Deploy workflow is disabled on
+GitHub and the site is unpublished. Don't re-enable either without asking.
 
 Done (frozen): epic 001, study mode (`docs/specs/001-study-mode/`) and
 epic 002, vanish mode (`docs/specs/002-vanish-mode/`).
