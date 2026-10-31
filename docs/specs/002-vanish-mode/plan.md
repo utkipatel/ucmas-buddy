@@ -50,8 +50,10 @@ const VANISH_SECONDS = { min: 0.2, max: 3, step: 0.1 };
   shapes are not drawn. Frame, rods, beam and dots are unchanged.
 - **`<StudyScreen range vanishAfterMs?>`**: `vanishAfterMs` is null when
   vanish mode is off. A `round` counter goes up with every answer; an
-  effect keyed on it starts a timer that sets `beadsHidden` after
-  `vanishAfterMs`, and resets it when a new round starts. Keying on the
+  effect keyed on it starts two timers: one marks the beads as fading at
+  `vanishAfterMs` minus the fade time, the other hides them at
+  `vanishAfterMs`. The fade itself is a CSS opacity transition, so it
+  ends exactly when the beads are removed. Keying on the
   round, not the number, means a number that repeats still gets its full
   showing, and Reset score doesn't re-show a vanished number.
 - **`<SettingsPanel>`**: a checkbox for vanish mode and, while it is on, a

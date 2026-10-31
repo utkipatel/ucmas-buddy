@@ -1,7 +1,7 @@
 # Epic 002: Vanish mode — Spec
 
 Status: **Approved**
-Last updated: 2026-10-30
+Last updated: 2026-10-30 (smooth fade, from review of PR #41)
 Epic issue: #2
 
 ## 1. Purpose
@@ -27,9 +27,13 @@ only adds the vanishing.
   remembered on the device.
 
 ### F2. Vanishing
-- With vanish mode on, each new number shows on the abacus for the vanish
-  time, then the **beads disappear**. The frame, rods, beam and unit dots
-  stay, so it's clear the abacus is hidden rather than showing 0.
+- With vanish mode on, each new number shows on the abacus and its
+  **beads fade out, fully gone exactly at the vanish time**. The fade
+  happens within the vanish time, during its last 40% and at most 0.25
+  seconds. The frame, rods, beam and unit dots stay, so it's clear the
+  abacus is hidden rather than showing 0.
+- If the device is set to reduce motion, there is no fade: the beads
+  stay fully visible, then disappear at the vanish time.
 - The timer starts when the number appears. Typing doesn't pause or
   restart it.
 - The learner answers as usual (epic 001, F3). The next number shows and
@@ -48,8 +52,9 @@ only adds the vanishing.
 - **AC1:** With vanish mode off, the beads stay visible until the number
   is answered.
 - **AC2:** With vanish mode on and a vanish time of T seconds, a new
-  number's beads are visible when it appears and gone T seconds later,
-  while the frame stays.
+  number's beads are fully visible when it appears, start fading at
+  T minus the fade time, and are gone T seconds later, while the frame
+  stays.
 - **AC3:** After an answer, the next number's beads are visible again and
   vanish T seconds after it appears.
 - **AC4:** Vanishing doesn't change the size or position of the abacus,
