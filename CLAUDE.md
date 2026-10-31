@@ -6,12 +6,12 @@ development with an industry-style GitHub workflow.
 
 ## Current work
 
-Epic 002, vanish mode: `docs/specs/002-vanish-mode/`, GitHub milestone
-"002 Vanish mode", epic issue #2. Pick the lowest-numbered open task issue
-in that milestone.
+Epic 003, modes and navigation: epic issue #27. Its spec is being written
+in `docs/specs/003-modes/`; task issues follow once it is approved.
 
-Done: epic 001, study mode (`docs/specs/001-study-mode/`, frozen).
-Next in the backlog: modes and navigation (#27), then voice input (#5).
+Done (frozen): epic 001, study mode (`docs/specs/001-study-mode/`) and
+epic 002, vanish mode (`docs/specs/002-vanish-mode/`).
+Next in the backlog: voice input (#5).
 
 ## Where things live
 
