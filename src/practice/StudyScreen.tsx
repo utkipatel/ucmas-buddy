@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Exercise from "./Exercise";
 import { type DigitRange, generateNumber } from "./generator";
+import ResultLine from "./ResultLine";
 import { answer, resetScore, startSession } from "./session";
 
 interface StudyScreenProps {
@@ -33,25 +34,7 @@ export default function StudyScreen({
       onAnswer={handleAnswer}
       vanishAfterMs={vanishAfterMs}
     >
-      <p
-        role="status"
-        // A new key replays the fade-in, even when two results in a
-        // row read the same.
-        key={score.attempted}
-        className={
-          lastResult === null
-            ? "result"
-            : lastResult.correct
-              ? "result correct"
-              : "result wrong"
-        }
-      >
-        {lastResult === null
-          ? " "
-          : lastResult.correct
-            ? `✓ Right, that was ${lastResult.number}`
-            : `✗ Not quite. That was ${lastResult.number}`}
-      </p>
+      <ResultLine result={lastResult} count={score.attempted} />
 
       <p className="score">
         <span>{`Score: ${score.correct} / ${score.attempted}`}</span>

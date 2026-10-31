@@ -67,17 +67,17 @@ describe("<TestPage>", () => {
     expect(screen.getByText(/vanish after 0\.8 s/i)).toBeTruthy();
   });
 
-  it("counts down and counts answers once started (AC5)", () => {
+  it("counts down and keeps a running score once started (AC5)", () => {
     render(<App />);
     click(/start/i);
     expect(timeLeft()).toBe("1:00");
-    expect(screen.getByText("Answered: 0")).toBeTruthy();
+    expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
 
     answerWith("1");
+    expect(screen.getByRole("status").textContent).toMatch(/right.*1/i);
     answerWith("2");
-    expect(screen.getByText("Answered: 2")).toBeTruthy();
-    // No right/wrong message during the test.
-    expect(screen.queryByText(/right|not quite/i)).toBeNull();
+    expect(screen.getByRole("status").textContent).toMatch(/not quite.*was 1/i);
+    expect(screen.getByText("Score: 1 / 2")).toBeTruthy();
 
     wait(18_000);
     expect(timeLeft()).toBe("0:42");
@@ -129,7 +129,8 @@ describe("<TestPage>", () => {
 
     click(/start again/i);
     expect(timeLeft()).toBe("1:00");
-    expect(screen.getByText("Answered: 0")).toBeTruthy();
+    expect(screen.getByText("Score: 0 / 0")).toBeTruthy();
+    expect(screen.getByRole("status").textContent?.trim()).toBe("");
   });
 
   it("drops a running test when leaving the page", () => {
