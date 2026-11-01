@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { startListening } from "./recognizer";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type ListenError, startListening } from "./recognizer";
 import { firstNumber } from "./spokenNumber";
 
 /** What to show the learner about listening (spec F2-F4). */
@@ -16,17 +16,24 @@ interface VoiceAnswersOptions {
 }
 
 /**
- * Listens for spoken answers while `active`. Each round hears at most
- * one number, so speech just after an answer can't answer the next
- * number too.
+ * Listens for spoken answers while `active` and the page is visible.
+ * Each round hears at most one number: listening stops when it's heard,
+ * and starts afresh for the next round, so speech just after an answer
+ * can't answer the next number too.
+ *
+ * After a problem (microphone blocked, or listening failed) it doesn't
+ * try again each round. It tries again only after a pause, such as
+ * opening the settings or switching tabs.
  */
 export function useVoiceAnswers({
   active,
   round,
   onNumber,
 }: VoiceAnswersOptions): VoiceStatus {
-  // What happened since listening last (re)started; null means nothing.
-  const [status, setStatus] = useState<VoiceStatus | null>(null);
+  const visible = usePageVisible();
+  const listening = active && visible;
+  const [problem, setProblem] = useState<ListenError | null>(null);
+  const [missed, setMissed] = useState(false);
 
   // The latest callback, so a new one doesn't restart listening.
   const onNumberRef = useRef(onNumber);
@@ -34,28 +41,45 @@ export function useVoiceAnswers({
     onNumberRef.current = onNumber;
   }, [onNumber]);
 
+  // A pause clears a problem, so listening is tried again afterwards.
   useEffect(() => {
-    if (!active) return;
-    let answered = false;
+    if (!listening) return;
+    return () => setProblem(null);
+  }, [listening]);
+
+  useEffect(() => {
+    if (!listening || problem !== null) return;
     const listener = startListening({
       onHeard(alternatives) {
-        if (answered) return;
         const n = firstNumber(alternatives);
         if (n === null) {
-          setStatus("not-a-number");
+          setMissed(true);
         } else {
-          answered = true;
+          listener.stop();
           onNumberRef.current(n);
         }
       },
-      onError: setStatus,
+      onError: setProblem,
     });
     return () => {
       listener.stop();
-      setStatus(null);
+      setMissed(false);
     };
-  }, [active, round]);
+  }, [listening, round, problem]);
 
   if (!active) return "off";
-  return status ?? "listening";
+  if (problem !== null) return problem;
+  return missed ? "not-a-number" : "listening";
+}
+
+/** True while the page is showing, not in a hidden tab. */
+function usePageVisible(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      document.addEventListener("visibilitychange", onChange);
+      return () => document.removeEventListener("visibilitychange", onChange);
+    },
+    () => document.visibilityState === "visible",
+    () => true,
+  );
 }

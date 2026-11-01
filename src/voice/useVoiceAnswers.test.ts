@@ -30,12 +30,12 @@ describe("useVoiceAnswers", () => {
     expect(created[0]?.listening).toBe(true);
   });
 
-  it("reports the number heard, once per round (AC4)", () => {
+  it("reports the number heard, then stops listening (AC4)", () => {
     const created = installFakeSpeech();
     const { onNumber } = renderVoice();
     act(() => created[0]?.hear("um", "for", "4"));
-    act(() => created[0]?.hear("5"));
     expect(onNumber.mock.calls).toEqual([[4]]);
+    expect(created[0]?.aborted).toBe(true);
   });
 
   it("says when speech isn't a number and keeps listening (AC6)", () => {
@@ -94,5 +94,39 @@ describe("useVoiceAnswers", () => {
   it("reports a failure without speech recognition", () => {
     const { result } = renderVoice();
     expect(result.current).toBe("failed");
+  });
+
+  it("doesn't retry each round after a problem, only after a pause (AC8)", () => {
+    const created = installFakeSpeech();
+    const { result, rerender } = renderVoice();
+    act(() => created[0]?.fail("not-allowed"));
+    rerender({ active: true, round: 1 });
+    expect(created).toHaveLength(1);
+    expect(result.current).toBe("blocked");
+
+    rerender({ active: false, round: 1 });
+    rerender({ active: true, round: 1 });
+    expect(created).toHaveLength(2);
+    expect(result.current).toBe("listening");
+  });
+
+  it("pauses while the page is in a hidden tab", () => {
+    const created = installFakeSpeech();
+    renderVoice();
+    let state: DocumentVisibilityState = "hidden";
+    vi.spyOn(document, "visibilityState", "get").mockImplementation(
+      () => state,
+    );
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(created[0]?.aborted).toBe(true);
+
+    state = "visible";
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(created[1]?.listening).toBe(true);
+    vi.restoreAllMocks();
   });
 });

@@ -106,16 +106,40 @@ describe("startListening", () => {
     expect(created[0]?.starts).toBe(1);
   });
 
-  it("gives up if listening keeps ending straight away", () => {
+  it("gives up if listening keeps ending with nothing heard", () => {
     vi.useFakeTimers();
     const created = installFakeSpeech();
     const { onError } = listen();
-    created[0]?.end();
-    created[0]?.end();
+    const r = created[0];
+    for (let i = 0; i < 4; i++) {
+      vi.advanceTimersByTime(1_500);
+      r?.end();
+    }
     expect(onError).not.toHaveBeenCalled();
-    created[0]?.end();
+    vi.advanceTimersByTime(1_500);
+    r?.end();
     expect(onError.mock.calls).toEqual([["failed"]]);
-    expect(created[0]?.listening).toBe(false);
+    expect(r?.listening).toBe(false);
+  });
+
+  it("keeps restarting after normal silences", () => {
+    vi.useFakeTimers();
+    const created = installFakeSpeech();
+    const { onError } = listen();
+    for (let i = 0; i < 20; i++) {
+      vi.advanceTimersByTime(8_000);
+      created[0]?.end();
+    }
+    expect(onError).not.toHaveBeenCalled();
+    expect(created[0]?.listening).toBe(true);
+  });
+
+  it("counts only new results in each event", () => {
+    const created = installFakeSpeech();
+    const { onHeard } = listen();
+    created[0]?.hear("what");
+    created[0]?.hear("12");
+    expect(onHeard.mock.calls).toEqual([[["what"]], [["12"]]]);
   });
 
   it("reports a failure if the browser won't start", () => {

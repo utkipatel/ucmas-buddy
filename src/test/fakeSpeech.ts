@@ -2,9 +2,10 @@
  * A fake of the browser's SpeechRecognition, so tests can "say" things
  * without a microphone. Install it in a test with installFakeSpeech().
  */
-import { onTestFinished, vi } from "vitest";
+import { onTestFinished } from "vitest";
 import type {
   SpeechRecognitionLike,
+  SpeechResult,
   SpeechResultEvent,
 } from "../voice/recognizer";
 
@@ -19,6 +20,8 @@ export class FakeSpeechRecognition implements SpeechRecognitionLike {
 
   /** True between start() and the end of listening. */
   listening = false;
+  /** Everything heard so far; like Chrome, each event lists it all. */
+  private results: SpeechResult[] = [];
   starts = 0;
   aborted = false;
 
@@ -45,7 +48,11 @@ export class FakeSpeechRecognition implements SpeechRecognitionLike {
       guesses.map((transcript) => ({ transcript })),
       { isFinal: true },
     );
-    this.onresult?.({ resultIndex: 0, results: [result] });
+    this.results = [...this.results, result];
+    this.onresult?.({
+      resultIndex: this.results.length - 1,
+      results: this.results,
+    });
   }
 
   /** The browser reports an error, such as "not-allowed", then ends. */
@@ -69,9 +76,10 @@ let created: FakeSpeechRecognition[] = [];
  */
 export function installFakeSpeech(): FakeSpeechRecognition[] {
   created = [];
-  vi.stubGlobal("webkitSpeechRecognition", FakeSpeechRecognition);
+  const w = window as unknown as Record<string, unknown>;
+  w.webkitSpeechRecognition = FakeSpeechRecognition;
   onTestFinished(() => {
-    vi.unstubAllGlobals();
+    delete w.webkitSpeechRecognition;
   });
   return created;
 }

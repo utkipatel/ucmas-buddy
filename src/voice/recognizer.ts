@@ -34,12 +34,13 @@ type SpeechRecognitionClass = new () => SpeechRecognitionLike;
 const MAX_ALTERNATIVES = 5;
 
 /**
- * If listening ends this soon after starting, this many times in a row,
+ * Browsers end listening after a few seconds of silence, and the app
+ * starts again. If it ends more often than this with nothing heard,
  * something is wrong (for example the browser won't listen without a
  * tap), so give up rather than restart forever.
  */
-const QUICK_END_MS = 1000;
-const MAX_QUICK_ENDS = 3;
+const RESTART_WINDOW_MS = 10_000;
+const MAX_RESTARTS_IN_WINDOW = 4;
 
 function speechRecognitionClass(): SpeechRecognitionClass | undefined {
   const w = window as unknown as {
@@ -88,8 +89,8 @@ export function startListening(handlers: {
   recognition.maxAlternatives = MAX_ALTERNATIVES;
 
   let stopped = false;
-  let startedAt = 0;
-  let quickEnds = 0;
+  /** When listening ended recently, with nothing heard since. */
+  let recentEnds: number[] = [];
 
   function stop() {
     stopped = true;
@@ -105,7 +106,6 @@ export function startListening(handlers: {
   }
 
   function start() {
-    startedAt = Date.now();
     try {
       recognition.start();
     } catch {
@@ -117,7 +117,7 @@ export function startListening(handlers: {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       if (result?.isFinal) {
-        quickEnds = 0;
+        recentEnds = [];
         handlers.onHeard(Array.from(result, (r) => r.transcript));
       }
     }
@@ -135,8 +135,11 @@ export function startListening(handlers: {
   // Browsers stop listening on their own after a while, so start again.
   recognition.onend = () => {
     if (stopped) return;
-    quickEnds = Date.now() - startedAt < QUICK_END_MS ? quickEnds + 1 : 0;
-    if (quickEnds >= MAX_QUICK_ENDS) {
+    const now = Date.now();
+    recentEnds = [...recentEnds, now].filter(
+      (t) => now - t < RESTART_WINDOW_MS,
+    );
+    if (recentEnds.length > MAX_RESTARTS_IN_WINDOW) {
       fail("failed");
     } else {
       start();
@@ -144,5 +147,9 @@ export function startListening(handlers: {
   };
 
   start();
-  return { stop: () => !stopped && stop() };
+  return {
+    stop() {
+      if (!stopped) stop();
+    },
+  };
 }
