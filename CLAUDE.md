@@ -28,12 +28,16 @@ and test modes (`docs/specs/003-modes/`).
 ## How we work
 
 1. A new epic starts from its epic issue: write `spec.md`, get approval.
-2. Write `plan.md`, get approval, then create task issues from it.
+2. Write `plan.md`, get approval, then create task issues from it. The
+   plan marks each task's review: **user** or **auto** (see "Who merges").
 3. For each task: create a branch from `main`, write tests for the logic
    first, implement, then open a pull request that says `Closes #<issue#>`.
-   The user reviews and merges.
+   Run `/code-review` on it and fix what it finds. Then the PR is merged
+   as its review says.
 4. If a requested change alters behavior, update the spec first and get
    approval before writing code.
+5. When all tasks are merged, the user tries the epic in the deployed app
+   (on a phone and a computer) before it's marked Done.
 
 ## Branches and pull requests
 
@@ -57,7 +61,28 @@ and test modes (`docs/specs/003-modes/`).
   comments from Claude's at a glance.
 - GitHub deletes merged branches automatically. Locally, clean up with
   `git switch main && git pull && git fetch --prune`.
-- Never push to `main` directly or merge a pull request without asking.
+- Never push to `main` directly.
+
+## Who merges
+
+Every merge to `main` deploys the app, so merging is shipping.
+
+- **User review:** the user reviews and merges. This is the default, and
+  always applies to: spec and plan PRs, screens and anything the learner
+  sees, browser features (microphone, storage, timers), new or updated
+  dependencies, CI and deploy workflows, and this file.
+- **Auto review:** Claude may squash-merge on its own when all of these
+  hold:
+  - the approved plan marks the task **auto** (logic with tests, no
+    screen changes);
+  - CI passes;
+  - `/code-review` found nothing left to fix;
+  - the PR stays within about 300 changed lines.
+
+  Before merging, Claude posts a PR comment saying what was checked, and
+  tells the user in the session. If any of these fail, or Claude is
+  unsure, the PR waits for the user.
+- The user can turn any **auto** task into **user** at any time.
 
 ## Commit messages (Conventional Commits)
 
