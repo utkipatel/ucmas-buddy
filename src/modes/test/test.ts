@@ -8,7 +8,7 @@ import { parseAnswer } from "../../practice/session";
 export interface TestAnswer {
   /** The number that was shown. */
   number: number;
-  /** What the learner typed, without surrounding spaces. */
+  /** What the learner typed or said, without surrounding spaces. */
   typed: string;
   correct: boolean;
 }

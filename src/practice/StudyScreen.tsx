@@ -8,6 +8,8 @@ interface StudyScreenProps {
   range: DigitRange;
   /** Vanish mode: hide the beads this long after each number appears. */
   vanishAfterMs?: number | null;
+  /** Voice answers: listen for the answer while this is true. */
+  voice?: boolean;
   /** Replaces Math.random in tests. */
   random?: () => number;
 }
@@ -16,6 +18,7 @@ interface StudyScreenProps {
 export default function StudyScreen({
   range,
   vanishAfterMs = null,
+  voice = false,
   random = Math.random,
 }: StudyScreenProps) {
   const [session, setSession] = useState(() =>
@@ -33,6 +36,7 @@ export default function StudyScreen({
       number={session.number}
       onAnswer={handleAnswer}
       vanishAfterMs={vanishAfterMs}
+      voice={voice}
     >
       <ResultLine result={lastResult} count={score.attempted} />
 

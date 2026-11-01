@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import App from "./App";
+import { installFakeSpeech } from "./test/fakeSpeech";
 
 beforeEach(() => {
   localStorage.clear();
@@ -364,11 +365,7 @@ describe("<App>", () => {
 
     describe("in a browser with speech recognition", () => {
       beforeEach(() => {
-        vi.stubGlobal(
-          "webkitSpeechRecognition",
-          function SpeechRecognition() {},
-        );
-        return () => vi.unstubAllGlobals();
+        installFakeSpeech();
       });
 
       it.each(["#/play", "#/test"])(

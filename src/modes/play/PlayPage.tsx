@@ -9,6 +9,7 @@ import {
   savePlaySettings,
   vanishAfterMs,
 } from "../../settings";
+import { isVoiceSupported } from "../../voice/recognizer";
 
 /** Open-ended practice with a running score. */
 export default function PlayPage() {
@@ -31,7 +32,13 @@ export default function PlayPage() {
 
   return (
     <>
-      <StudyScreen key={sessionKey} range={range} vanishAfterMs={vanishMs} />
+      <StudyScreen
+        key={sessionKey}
+        range={range}
+        vanishAfterMs={vanishMs}
+        // Listening pauses while the settings are open (spec F2).
+        voice={settings.voice && isVoiceSupported() && !settingsOpen}
+      />
 
       {settingsOpen && (
         <SettingsPanel
