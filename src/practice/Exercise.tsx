@@ -7,6 +7,7 @@ import {
 } from "react";
 import Abacus, { type BeadVisibility } from "../abacus/Abacus";
 import { numberToRods } from "../abacus/model";
+import { isVoiceSupported } from "../voice/recognizer";
 import { useVoiceAnswers } from "../voice/useVoiceAnswers";
 import VoiceStatus from "../voice/VoiceStatus";
 import { fadeDurationMs } from "./vanish";
@@ -21,9 +22,9 @@ interface ExerciseProps {
   /** Puts the cursor in the answer box straight away. */
   autoFocus?: boolean;
   /**
-   * Voice answers (epic 004): listen for the answer while this is true.
-   * The answer box then doesn't take the focus by itself, so a phone's
-   * keyboard stays closed.
+   * Voice answers (epic 004): listen for the answer while this is true,
+   * if the browser can recognize speech. The answer box then doesn't
+   * take the focus by itself, so a phone's keyboard stays closed.
    */
   voice?: boolean;
   /** Shown under the answer box, such as the result line and score. */
@@ -96,9 +97,11 @@ export default function Exercise({
     inputRef.current?.focus({ preventScroll: true });
   }
 
-  // A spoken number answers just like a typed one (spec F3).
+  // A spoken number answers just like a typed one (spec F3). Listening
+  // pauses while something is typed, so speech can't replace it.
+  const voiceOn = voice && isVoiceSupported();
   const voiceStatus = useVoiceAnswers({
-    active: voice,
+    active: voiceOn && typed.trim() === "",
     round,
     onNumber: (n) => submit(String(n)),
   });
@@ -115,7 +118,7 @@ export default function Exercise({
           ref={inputRef}
           inputMode="numeric"
           autoComplete="off"
-          autoFocus={autoFocus && !voice}
+          autoFocus={autoFocus && !voiceOn}
           value={typed}
           onChange={(event) => setTyped(event.target.value)}
         />

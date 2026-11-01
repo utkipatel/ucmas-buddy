@@ -6,7 +6,15 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest";
 import App from "../../App";
 import { PLAY_SETTINGS_KEY } from "../../settings";
 import { installFakeSpeech } from "../../test/fakeSpeech";
@@ -71,6 +79,18 @@ describe("<PlayPage> voice answers (epic 004)", () => {
     expect(screen.getByText("Score: 1 / 1")).toBeTruthy();
   });
 
+  it("pauses while something is typed, so speech can't replace it", () => {
+    const created = installFakeSpeech();
+    renderPlay(true);
+    const box = screen.getByLabelText(/your answer/i);
+    fireEvent.change(box, { target: { value: "4" } });
+    expect(created.at(-1)?.aborted).toBe(true);
+    expect(voiceStatus()).toBeNull();
+
+    fireEvent.change(box, { target: { value: "" } });
+    expect(created.at(-1)?.listening).toBe(true);
+  });
+
   it("pauses while the settings are open (AC3)", async () => {
     const created = installFakeSpeech();
     renderPlay(true);
@@ -103,8 +123,10 @@ describe("<PlayPage> voice answers (epic 004)", () => {
   it("doesn't listen without speech recognition, even if saved as on", () => {
     vi.stubGlobal("SpeechRecognition", undefined);
     vi.stubGlobal("webkitSpeechRecognition", undefined);
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
     renderPlay(true);
     expect(voiceStatus()).toBeNull();
-    vi.unstubAllGlobals();
   });
 });

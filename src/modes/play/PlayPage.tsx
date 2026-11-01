@@ -9,7 +9,6 @@ import {
   savePlaySettings,
   vanishAfterMs,
 } from "../../settings";
-import { isVoiceSupported } from "../../voice/recognizer";
 
 /** Open-ended practice with a running score. */
 export default function PlayPage() {
@@ -37,7 +36,7 @@ export default function PlayPage() {
         range={range}
         vanishAfterMs={vanishMs}
         // Listening pauses while the settings are open (spec F2).
-        voice={settings.voice && isVoiceSupported() && !settingsOpen}
+        voice={settings.voice && !settingsOpen}
       />
 
       {settingsOpen && (
