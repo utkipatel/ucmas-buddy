@@ -14,6 +14,8 @@ export interface VanishSettings {
 export interface PlaySettings {
   range: DigitRange;
   vanish: VanishSettings;
+  /** Voice answers (epic 004): listen for the answer while a number shows. */
+  voice: boolean;
 }
 
 /** The test lengths the learner can pick, in minutes. */
@@ -27,6 +29,7 @@ export interface TestSettings extends PlaySettings {
 export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
   range: { min: 1, max: 3 },
   vanish: { enabled: false, seconds: 0.5 },
+  voice: false,
 };
 
 export const DEFAULT_TEST_SETTINGS: TestSettings = {
@@ -130,12 +133,13 @@ function toPlaySettings(saved: unknown): PlaySettings {
   if (!isObject(saved)) {
     return DEFAULT_PLAY_SETTINGS;
   }
-  const { range, vanish } = saved;
+  const { range, vanish, voice } = saved;
   return {
     range: isRange(range)
       ? { min: range.min, max: range.max }
       : DEFAULT_PLAY_SETTINGS.range,
     vanish: toVanish(vanish),
+    voice: typeof voice === "boolean" ? voice : DEFAULT_PLAY_SETTINGS.voice,
   };
 }
 
