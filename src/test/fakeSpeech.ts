@@ -55,6 +55,21 @@ export class FakeSpeechRecognition implements SpeechRecognitionLike {
     });
   }
 
+  /**
+   * An early guess for the phrase being spoken. Like Chrome, each new
+   * guess replaces the previous one until the phrase is final.
+   */
+  hearSoFar(...guesses: string[]): void {
+    const result = Object.assign(
+      guesses.map((transcript) => ({ transcript })),
+      { isFinal: false },
+    );
+    this.onresult?.({
+      resultIndex: this.results.length,
+      results: [...this.results, result],
+    });
+  }
+
   /** The browser reports an error, such as "not-allowed", then ends. */
   fail(error: string): void {
     this.onerror?.({ error });

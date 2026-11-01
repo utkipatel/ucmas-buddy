@@ -34,6 +34,14 @@ type SpeechRecognitionClass = new () => SpeechRecognitionLike;
 const MAX_ALTERNATIVES = 5;
 
 /**
+ * Chrome takes 5-7 seconds after a short phrase like "seven" to call its
+ * result final, so the app also uses its early (interim) guesses. One
+ * that stays the same this long counts as heard: long enough not to cut
+ * "forty... two" short, and much faster than waiting for the final one.
+ */
+export const SETTLE_MS = 700;
+
+/**
  * Browsers end listening after a few seconds of silence, and the app
  * starts again. If it ends more often than this with nothing heard,
  * something is wrong (for example the browser won't listen without a
@@ -69,8 +77,9 @@ export interface Listener {
 }
 
 /**
- * Starts listening. Calls onHeard with the guesses for each phrase, and
- * keeps listening through pauses until stop() or an error.
+ * Starts listening. Calls onHeard with the guesses for each phrase, as
+ * soon as they settle, and keeps listening through pauses until stop()
+ * or an error.
  */
 export function startListening(handlers: {
   onHeard: (alternatives: string[]) => void;
@@ -85,14 +94,29 @@ export function startListening(handlers: {
   const recognition = new Recognition();
   recognition.lang = speechLanguage(navigator.language);
   recognition.continuous = true;
-  recognition.interimResults = false;
+  recognition.interimResults = true;
   recognition.maxAlternatives = MAX_ALTERNATIVES;
 
   let stopped = false;
   /** When listening ended recently, with nothing heard since. */
   let recentEnds: number[] = [];
+  /** An early guess waiting to settle. */
+  let settling: ReturnType<typeof setTimeout> | undefined;
+  /** The phrase last reported, so it isn't reported twice. */
+  let lastReported = "";
+
+  /** Reports a phrase's guesses, unless they were just reported. */
+  function report(index: number, alternatives: string[]) {
+    clearTimeout(settling);
+    const key = `${index}:${alternatives.join("|")}`;
+    if (key === lastReported) return;
+    lastReported = key;
+    recentEnds = [];
+    handlers.onHeard(alternatives);
+  }
 
   function stop() {
+    clearTimeout(settling);
     stopped = true;
     recognition.onresult = null;
     recognition.onerror = null;
@@ -106,6 +130,7 @@ export function startListening(handlers: {
   }
 
   function start() {
+    lastReported = "";
     try {
       recognition.start();
     } catch {
@@ -117,9 +142,14 @@ export function startListening(handlers: {
     // stop() may be called from onHeard; then nothing more is reported.
     for (let i = event.resultIndex; i < event.results.length && !stopped; i++) {
       const result = event.results[i];
-      if (result?.isFinal) {
-        recentEnds = [];
-        handlers.onHeard(Array.from(result, (r) => r.transcript));
+      if (result === undefined) continue;
+      const alternatives = Array.from(result, (r) => r.transcript);
+      if (result.isFinal) {
+        report(i, alternatives);
+      } else {
+        // Wait for the early guess to stop changing.
+        clearTimeout(settling);
+        settling = setTimeout(() => report(i, alternatives), SETTLE_MS);
       }
     }
   };

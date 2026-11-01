@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { installFakeSpeech } from "../test/fakeSpeech";
-import { isVoiceSupported, speechLanguage, startListening } from "./recognizer";
+import {
+  isVoiceSupported,
+  SETTLE_MS,
+  speechLanguage,
+  startListening,
+} from "./recognizer";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -37,14 +42,14 @@ describe("speechLanguage", () => {
 });
 
 describe("startListening", () => {
-  it("listens continuously for final results, with up to 5 guesses", () => {
+  it("listens continuously, with early guesses and up to 5 guesses", () => {
     const created = installFakeSpeech();
     listen();
     const [r] = created;
     expect(created).toHaveLength(1);
     expect(r?.listening).toBe(true);
     expect(r?.continuous).toBe(true);
-    expect(r?.interimResults).toBe(false);
+    expect(r?.interimResults).toBe(true);
     expect(r?.maxAlternatives).toBe(5);
     expect(r?.lang).toBe(speechLanguage(navigator.language));
   });
@@ -57,14 +62,58 @@ describe("startListening", () => {
     expect(onHeard.mock.calls).toEqual([[["for", "four", "4"]], [["um"]]]);
   });
 
-  it("ignores results that aren't final", () => {
-    const created = installFakeSpeech();
-    const { onHeard } = listen();
-    const notFinal = Object.assign([{ transcript: "for" }], {
-      isFinal: false,
+  describe("early guesses", () => {
+    it("reports one once it stops changing for a moment", () => {
+      vi.useFakeTimers();
+      const created = installFakeSpeech();
+      const { onHeard } = listen();
+      created[0]?.hearSoFar("seven");
+      vi.advanceTimersByTime(SETTLE_MS - 1);
+      expect(onHeard).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(onHeard.mock.calls).toEqual([[["seven"]]]);
     });
-    created[0]?.onresult?.({ resultIndex: 0, results: [notFinal] });
-    expect(onHeard).not.toHaveBeenCalled();
+
+    it("waits while the phrase is still changing", () => {
+      vi.useFakeTimers();
+      const created = installFakeSpeech();
+      const { onHeard } = listen();
+      created[0]?.hearSoFar("forty");
+      vi.advanceTimersByTime(300);
+      created[0]?.hearSoFar("forty two");
+      vi.advanceTimersByTime(SETTLE_MS);
+      expect(onHeard.mock.calls).toEqual([[["forty two"]]]);
+    });
+
+    it("uses the final result straight away when it comes first", () => {
+      vi.useFakeTimers();
+      const created = installFakeSpeech();
+      const { onHeard } = listen();
+      created[0]?.hearSoFar("seven");
+      created[0]?.hear("seven", "7");
+      vi.advanceTimersByTime(SETTLE_MS);
+      expect(onHeard.mock.calls).toEqual([[["seven", "7"]]]);
+    });
+
+    it("doesn't report the same phrase twice", () => {
+      vi.useFakeTimers();
+      const created = installFakeSpeech();
+      const { onHeard } = listen();
+      created[0]?.hearSoFar("seven");
+      vi.advanceTimersByTime(SETTLE_MS);
+      created[0]?.hear("seven");
+      expect(onHeard).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports nothing after stop()", () => {
+      vi.useFakeTimers();
+      const created = installFakeSpeech();
+      const { listener, onHeard } = listen();
+      created[0]?.hearSoFar("seven");
+      listener.stop();
+      vi.advanceTimersByTime(SETTLE_MS);
+      expect(onHeard).not.toHaveBeenCalled();
+    });
   });
 
   it("starts again when the browser stops on its own (spec F2)", () => {
