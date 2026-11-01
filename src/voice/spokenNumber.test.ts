@@ -6,9 +6,12 @@ describe("parseSpokenNumber (AC5)", () => {
     ["412", 412],
     ["4,120", 4120],
     ["4 1 2", 412],
+    ["41 2", 412],
+    ["4 120", 4120],
+    ["500 3", 5003],
     ["999999", 999999],
     ["0", 0],
-  ])("reads digits: %j", (text, expected) => {
+  ])("reads digits like a typed answer: %j", (text, expected) => {
     expect(parseSpokenNumber(text)).toBe(expected);
   });
 
@@ -29,6 +32,10 @@ describe("parseSpokenNumber (AC5)", () => {
     ["two thousand and five", 2005],
     ["twelve thousand three hundred forty-five", 12345],
     ["nine hundred ninety-nine thousand nine hundred ninety-nine", 999999],
+    ["fifteen hundred", 1500],
+    ["twenty five hundred", 2500],
+    ["twelve hundred thirty four", 1234],
+    ["one hundred oh five", 105],
   ])("reads words: %j", (text, expected) => {
     expect(parseSpokenNumber(text)).toBe(expected);
   });
@@ -67,6 +74,12 @@ describe("parseSpokenNumber (AC5)", () => {
     expect(parseSpokenNumber("  Forty-Two. ")).toBe(42);
     expect(parseSpokenNumber("412?")).toBe(412);
   });
+
+  it("ignores punctuation between words", () => {
+    expect(parseSpokenNumber("Four, one, two.")).toBe(412);
+    expect(parseSpokenNumber("4, 1, 2")).toBe(412);
+    expect(parseSpokenNumber("forty, two")).toBe(42);
+  });
 });
 
 describe("parseSpokenNumber: not a number (AC6)", () => {
@@ -82,10 +95,12 @@ describe("parseSpokenNumber: not a number (AC6)", () => {
     "thousand",
     "twenty twenty",
     "twelve three",
-    "fifteen hundred",
+    "fifteen hundred thousand",
     "four hundred hundred",
     "five thousand thousand",
-    "500 3",
+    "1,000,000",
+    "1234567",
+    "one two three four five six seven",
     "3.5",
     "-4",
     "constructor",
