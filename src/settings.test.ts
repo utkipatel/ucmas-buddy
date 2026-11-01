@@ -182,6 +182,14 @@ describe("play settings", () => {
         });
       },
     );
+
+    it("loads settings saved before modes existed with voice off", () => {
+      const { range, vanish } = CUSTOM;
+      const storage = fakeStorage({
+        [OLD_SETTINGS_KEY]: JSON.stringify({ range, vanish }),
+      });
+      expect(loadPlaySettings(storage).voice).toBe(false);
+    });
   });
 });
 
@@ -226,6 +234,11 @@ describe("test settings", () => {
       });
     },
   );
+
+  it("checks the voice part like Play's", () => {
+    expect(loadSavedTest({ ...CUSTOM_TEST, voice: "yes" }).voice).toBe(false);
+    expect(loadSavedTest({ ...CUSTOM_TEST, voice: true }).voice).toBe(true);
+  });
 
   it("checks the range and vanish parts like Play's", () => {
     const saved = { range: { min: 5, max: 2 }, vanish: "fast", minutes: 2 };
