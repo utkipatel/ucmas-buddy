@@ -49,6 +49,15 @@ function answerWrong() {
 const drawerClosed = () =>
   waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 
+/** Goes to another mode through the side menu. */
+async function goTo(name: string) {
+  openMenu();
+  fireEvent.click(
+    screen.getByRole("link", { name: new RegExp(`^${name}$`, "i") }),
+  );
+  await drawerClosed();
+}
+
 const rangeShown = () => [
   screen.getByLabelText<HTMLSelectElement>(/from/i).value,
   screen.getByLabelText<HTMLSelectElement>(/to/i).value,
@@ -289,15 +298,6 @@ describe("<App>", () => {
     const testLength = () =>
       screen.queryByLabelText<HTMLSelectElement>(/length/i);
 
-    /** Goes to another mode through the side menu. */
-    async function goTo(name: string) {
-      openMenu();
-      fireEvent.click(
-        screen.getByRole("link", { name: new RegExp(`^${name}$`, "i") }),
-      );
-      await drawerClosed();
-    }
-
     it("offers a 1, 2, 3 or 5 minute test, 1 by default, in Test only", () => {
       renderAt("#/test");
       openSettings();
@@ -354,5 +354,60 @@ describe("<App>", () => {
       openSettings();
       expect(testLength()?.value).toBe("5");
     });
+  });
+
+  describe("voice answers (epic 004)", () => {
+    const voiceSwitch = () =>
+      screen.queryByRole<HTMLInputElement>("checkbox", {
+        name: /saying the number/i,
+      });
+
+    describe("in a browser with speech recognition", () => {
+      beforeEach(() => {
+        vi.stubGlobal(
+          "webkitSpeechRecognition",
+          function SpeechRecognition() {},
+        );
+        return () => vi.unstubAllGlobals();
+      });
+
+      it.each(["#/play", "#/test"])(
+        "offers the switch, off by default, at %s (AC1)",
+        (hash) => {
+          renderAt(hash);
+          openSettings();
+          expect(voiceSwitch()?.checked).toBe(false);
+          expect(screen.queryByText(/need chrome or safari/i)).toBeNull();
+        },
+      );
+
+      it("remembers it per mode after a reload (AC1)", async () => {
+        const first = renderAt("#/play");
+        openSettings();
+        fireEvent.click(
+          screen.getByRole("checkbox", { name: /saying the number/i }),
+        );
+        save();
+        await drawerClosed();
+
+        first.unmount();
+        renderAt("#/play");
+        openSettings();
+        expect(voiceSwitch()?.checked).toBe(true);
+        await goTo("test");
+        openSettings();
+        expect(voiceSwitch()?.checked).toBe(false);
+      });
+    });
+
+    it.each(["#/play", "#/test"])(
+      "explains instead of offering the switch without speech recognition, at %s (AC2)",
+      (hash) => {
+        renderAt(hash);
+        openSettings();
+        expect(voiceSwitch()).toBeNull();
+        expect(screen.getByText(/need chrome or safari/i)).toBeTruthy();
+      },
+    );
   });
 });

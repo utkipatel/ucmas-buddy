@@ -9,6 +9,7 @@ import {
   VANISH_SECONDS,
   type VanishSettings,
 } from "../settings";
+import { isVoiceSupported } from "../voice/recognizer";
 import { MAX_DIGITS, MIN_DIGITS } from "./generator";
 
 interface SettingsPanelProps<S extends PlaySettings> {
@@ -139,6 +140,27 @@ export default function SettingsPanel<S extends PlaySettings>({
                 />
                 <output>{`${vanish.seconds.toFixed(1)} s`}</output>
               </label>
+            )}
+          </fieldset>
+
+          <fieldset>
+            <legend>Voice answers</legend>
+            {isVoiceSupported() ? (
+              <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={draft.voice}
+                  onChange={(e) =>
+                    setDraft({ ...draft, voice: e.target.checked })
+                  }
+                />{" "}
+                Answer by saying the number
+              </label>
+            ) : (
+              <p className="note">
+                Voice answers need Chrome or Safari. This browser can't
+                recognize speech.
+              </p>
             )}
           </fieldset>
 
