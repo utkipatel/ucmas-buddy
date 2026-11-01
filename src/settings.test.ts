@@ -37,6 +37,7 @@ const brokenStorage: SettingsStorage = {
 const CUSTOM: PlaySettings = {
   range: { min: 2, max: 5 },
   vanish: { enabled: true, seconds: 1.2 },
+  voice: true,
 };
 
 const CUSTOM_TEST: TestSettings = { ...CUSTOM, minutes: 3 };
@@ -50,10 +51,11 @@ const loadSavedTest = (saved: unknown) =>
   loadTestSettings(fakeStorage({ [TEST_SETTINGS_KEY]: JSON.stringify(saved) }));
 
 describe("play settings", () => {
-  it("defaults to a 1-3 digit range with vanish mode off at 0.5 s", () => {
+  it("defaults to 1-3 digits, vanish off at 0.5 s and voice off", () => {
     expect(DEFAULT_PLAY_SETTINGS).toEqual({
       range: { min: 1, max: 3 },
       vanish: { enabled: false, seconds: 0.5 },
+      voice: false,
     });
   });
 
@@ -120,8 +122,8 @@ describe("play settings", () => {
   describe("vanish settings (epic 002, AC6)", () => {
     it("loads settings saved before vanish mode existed with it off", () => {
       expect(loadSaved({ range: CUSTOM.range })).toEqual({
+        ...DEFAULT_PLAY_SETTINGS,
         range: CUSTOM.range,
-        vanish: DEFAULT_PLAY_SETTINGS.vanish,
       });
     });
 
@@ -141,7 +143,7 @@ describe("play settings", () => {
 
     it("keeps the range when the vanish part is broken", () => {
       expect(loadSaved({ ...CUSTOM, vanish: "fast" })).toEqual({
-        range: CUSTOM.range,
+        ...CUSTOM,
         vanish: DEFAULT_PLAY_SETTINGS.vanish,
       });
     });
@@ -159,6 +161,34 @@ describe("play settings", () => {
         const saved = { ...CUSTOM, vanish: { enabled: true, seconds } };
         expect(loadSaved(saved).vanish.seconds).toBe(seconds);
       }
+    });
+  });
+
+  describe("voice answers (epic 004, AC1)", () => {
+    it("loads settings saved before voice answers existed with voice off", () => {
+      const { range, vanish } = CUSTOM;
+      expect(loadSaved({ range, vanish })).toEqual({
+        ...CUSTOM,
+        voice: false,
+      });
+    });
+
+    it.each(["yes", 1, null, {}])(
+      "uses voice off for %j and keeps the rest",
+      (voice) => {
+        expect(loadSaved({ ...CUSTOM, voice })).toEqual({
+          ...CUSTOM,
+          voice: false,
+        });
+      },
+    );
+
+    it("loads settings saved before modes existed with voice off", () => {
+      const { range, vanish } = CUSTOM;
+      const storage = fakeStorage({
+        [OLD_SETTINGS_KEY]: JSON.stringify({ range, vanish }),
+      });
+      expect(loadPlaySettings(storage).voice).toBe(false);
     });
   });
 });
@@ -204,6 +234,11 @@ describe("test settings", () => {
       });
     },
   );
+
+  it("checks the voice part like Play's", () => {
+    expect(loadSavedTest({ ...CUSTOM_TEST, voice: "yes" }).voice).toBe(false);
+    expect(loadSavedTest({ ...CUSTOM_TEST, voice: true }).voice).toBe(true);
+  });
 
   it("checks the range and vanish parts like Play's", () => {
     const saved = { range: { min: 5, max: 2 }, vanish: "fast", minutes: 2 };
