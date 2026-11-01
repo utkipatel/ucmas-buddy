@@ -1,6 +1,6 @@
 # Epic 004: Voice input — Plan
 
-Status: **Approved** (in progress)
+Status: **Done** (shipped 2026-11-01; frozen, do not edit)
 Spec: [spec.md](spec.md)
 
 ## 1. Speech recognition in the browser

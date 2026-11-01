@@ -6,12 +6,14 @@ development with an industry-style GitHub workflow.
 
 ## Current work
 
-Epic 004, voice input: epic issue #5. Its spec will be written in
-`docs/specs/004-voice-input/`; task issues follow once it is approved.
+No epic in progress. The user picks the next one from the backlog
+(issues labeled `epic`): #4 calculation practice, #6 decimals, #7
+progress over time. Start it as in "How we work".
 
 Done (frozen): epic 001, study mode (`docs/specs/001-study-mode/`),
-epic 002, vanish mode (`docs/specs/002-vanish-mode/`) and epic 003, play
-and test modes (`docs/specs/003-modes/`).
+epic 002, vanish mode (`docs/specs/002-vanish-mode/`), epic 003, play
+and test modes (`docs/specs/003-modes/`) and epic 004, voice input
+(`docs/specs/004-voice-input/`; see its spec's known limitation).
 
 ## Where things live
 

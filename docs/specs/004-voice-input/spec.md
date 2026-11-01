@@ -1,6 +1,6 @@
 # Epic 004: Voice input — Spec
 
-Status: **Approved** (in progress)
+Status: **Done** (shipped 2026-11-01; frozen, do not edit)
 Last updated: 2026-11-01 (known limitation, from hand testing)
 Epic issue: #5
 
