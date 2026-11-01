@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import App from "./App";
 
 beforeEach(() => {
@@ -400,9 +400,24 @@ describe("<App>", () => {
       });
     });
 
+    it("offers the switch when the browser uses the standard name", () => {
+      vi.stubGlobal("SpeechRecognition", function SpeechRecognition() {});
+      onTestFinished(() => {
+        vi.unstubAllGlobals();
+      });
+      renderAt("#/play");
+      openSettings();
+      expect(voiceSwitch()).not.toBeNull();
+    });
+
     it.each(["#/play", "#/test"])(
       "explains instead of offering the switch without speech recognition, at %s (AC2)",
       (hash) => {
+        vi.stubGlobal("SpeechRecognition", undefined);
+        vi.stubGlobal("webkitSpeechRecognition", undefined);
+        onTestFinished(() => {
+          vi.unstubAllGlobals();
+        });
         renderAt(hash);
         openSettings();
         expect(voiceSwitch()).toBeNull();

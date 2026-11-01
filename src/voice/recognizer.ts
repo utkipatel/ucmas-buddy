@@ -6,5 +6,8 @@
 
 /** True when this browser can recognize speech (not Firefox, for one). */
 export function isVoiceSupported(): boolean {
-  return "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+  const w = window as unknown as Record<string, unknown>;
+  return (
+    w.SpeechRecognition !== undefined || w.webkitSpeechRecognition !== undefined
+  );
 }
