@@ -23,13 +23,8 @@ How the app sets it up:
 - **`maxAlternatives: 5`**: the browser returns up to five guesses for
   what was said, and the app uses the first one that reads as a number.
   This helps with sound-alikes ("for" vs "4").
-- **Early guesses that settle** (`interimResults: true`). Hand testing
-  showed Chrome takes 5-7 seconds after a short phrase like "seven" to
-  call its result final. Learners then said the number again, and
-  "nine nine" counted as 99. So the app also uses Chrome's early
-  guesses: one that stays the same for 0.7 seconds counts as heard. A
-  final result counts straight away. 0.7 seconds is long enough not to
-  cut "forty... two" short.
+- **Final results only** (`interimResults: false`), so a half-heard
+  "forty" doesn't count before "forty-two" is finished.
 - **One answer per number.** After a number is heard, the app stops the
   recognizer and starts a new one for the next number. Anything said
   just after the answer can't then spill over onto the next number.
