@@ -150,6 +150,19 @@ describe("startListening", () => {
     expect(onError.mock.calls).toEqual([["failed"]]);
   });
 
+  it("reports nothing more once stop() is called while hearing", () => {
+    const created = installFakeSpeech();
+    const onHeard = vi.fn(() => listener.stop());
+    const listener = startListening({ onHeard, onError: vi.fn() });
+    const phrase = (t: string) =>
+      Object.assign([{ transcript: t }], { isFinal: true });
+    created[0]?.onresult?.({
+      resultIndex: 0,
+      results: [phrase("one"), phrase("four")],
+    });
+    expect(onHeard).toHaveBeenCalledTimes(1);
+  });
+
   it("reports nothing more after stop()", () => {
     const created = installFakeSpeech();
     const { listener, onHeard, onError } = listen();

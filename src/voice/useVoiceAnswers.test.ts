@@ -112,7 +112,7 @@ describe("useVoiceAnswers", () => {
 
   it("pauses while the page is in a hidden tab", () => {
     const created = installFakeSpeech();
-    renderVoice();
+    const { result } = renderVoice();
     let state: DocumentVisibilityState = "hidden";
     vi.spyOn(document, "visibilityState", "get").mockImplementation(
       () => state,
@@ -121,6 +121,7 @@ describe("useVoiceAnswers", () => {
       document.dispatchEvent(new Event("visibilitychange"));
     });
     expect(created[0]?.aborted).toBe(true);
+    expect(result.current).toBe("off");
 
     state = "visible";
     act(() => {

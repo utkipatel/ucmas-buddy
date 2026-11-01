@@ -114,7 +114,8 @@ export function startListening(handlers: {
   }
 
   recognition.onresult = (event) => {
-    for (let i = event.resultIndex; i < event.results.length; i++) {
+    // stop() may be called from onHeard; then nothing more is reported.
+    for (let i = event.resultIndex; i < event.results.length && !stopped; i++) {
       const result = event.results[i];
       if (result?.isFinal) {
         recentEnds = [];
