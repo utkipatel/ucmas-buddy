@@ -1,7 +1,7 @@
 # Epic 004: Voice input — Spec
 
 Status: **Approved** (in progress)
-Last updated: 2026-10-31
+Last updated: 2026-11-01 (known limitation, from hand testing)
 Epic issue: #5
 
 ## 1. Purpose
@@ -102,3 +102,19 @@ in Chrome and Safari, not in Firefox.
 - A mic button for answering one number at a time (hands-free listening
   only).
 - Asking the learner to confirm a heard number before it counts.
+
+## 5. Known limitation
+
+Found in hand testing (Chrome on a computer): **numbers said as one
+short syllable**, such as "one", "four" or "eight", are often not
+recognized. Chrome returns no text, or returns it many seconds late,
+and the learner may repeat it ("nine nine" then counts as 99). This
+happened with Chrome's online and on-device recognition alike.
+Numbers with more syllables ("seven", "fifty-three", "four hundred")
+work well, so voice answers suit ranges of 2 or more digits best. For
+1-digit practice, typing is more reliable.
+
+Possible future fix, not planned: replace the browser's recognition
+with a speech model that runs in the page, such as Moonshine through
+Transformers.js. Test it on lone digits first, since short words are
+hard for most speech models.
