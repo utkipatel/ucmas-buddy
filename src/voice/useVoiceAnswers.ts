@@ -67,7 +67,7 @@ export function useVoiceAnswers({
     };
   }, [listening, round, problem]);
 
-  if (!active) return "off";
+  if (!listening) return "off";
   if (problem !== null) return problem;
   return missed ? "not-a-number" : "listening";
 }
