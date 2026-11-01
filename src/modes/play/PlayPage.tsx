@@ -31,7 +31,13 @@ export default function PlayPage() {
 
   return (
     <>
-      <StudyScreen key={sessionKey} range={range} vanishAfterMs={vanishMs} />
+      <StudyScreen
+        key={sessionKey}
+        range={range}
+        vanishAfterMs={vanishMs}
+        // Listening pauses while the settings are open (spec F2).
+        voice={settings.voice && !settingsOpen}
+      />
 
       {settingsOpen && (
         <SettingsPanel

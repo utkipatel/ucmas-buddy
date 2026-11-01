@@ -7,6 +7,9 @@ import {
 } from "react";
 import Abacus, { type BeadVisibility } from "../abacus/Abacus";
 import { numberToRods } from "../abacus/model";
+import { isVoiceSupported } from "../voice/recognizer";
+import { useVoiceAnswers } from "../voice/useVoiceAnswers";
+import VoiceStatus from "../voice/VoiceStatus";
 import { fadeDurationMs } from "./vanish";
 
 interface ExerciseProps {
@@ -18,6 +21,12 @@ interface ExerciseProps {
   vanishAfterMs?: number | null;
   /** Puts the cursor in the answer box straight away. */
   autoFocus?: boolean;
+  /**
+   * Voice answers (epic 004): listen for the answer while this is true,
+   * if the browser can recognize speech. The answer box then doesn't
+   * take the focus by itself, so a phone's keyboard stays closed.
+   */
+  voice?: boolean;
   /** Shown under the answer box, such as the result line and score. */
   children?: ReactNode;
 }
@@ -32,6 +41,7 @@ export default function Exercise({
   onAnswer,
   vanishAfterMs = null,
   autoFocus = false,
+  voice = false,
   children,
 }: ExerciseProps) {
   const [typed, setTyped] = useState("");
@@ -70,21 +80,36 @@ export default function Exercise({
     return () => viewport.removeEventListener("resize", keepAbacusVisible);
   }, []);
 
-  function handleAnswer(event: FormEvent) {
-    event.preventDefault();
-    if (typed.trim() === "") return;
-    onAnswer(typed);
+  /** Answers the shown number and moves on to the next one. */
+  function submit(answer: string) {
+    onAnswer(answer);
     setTyped("");
     setRound((r) => r + 1);
     setBeads("shown");
+  }
+
+  function handleAnswer(event: FormEvent) {
+    event.preventDefault();
+    if (typed.trim() === "") return;
+    submit(typed);
     // Keep the keyboard up on phones, ready for the next number, without
     // letting the browser scroll the abacus away.
     inputRef.current?.focus({ preventScroll: true });
   }
 
+  // A spoken number answers just like a typed one (spec F3). Listening
+  // pauses while something is typed, so speech can't replace it.
+  const voiceOn = voice && isVoiceSupported();
+  const voiceStatus = useVoiceAnswers({
+    active: voiceOn && typed.trim() === "",
+    round,
+    onNumber: (n) => submit(String(n)),
+  });
+
   return (
     <section className="study" ref={sectionRef}>
       <Abacus rods={numberToRods(number)} beads={beads} fadeMs={fadeMs} />
+      <VoiceStatus status={voiceStatus} />
 
       <form className="answer" onSubmit={handleAnswer}>
         <label htmlFor="answer">Your answer</label>
@@ -93,7 +118,7 @@ export default function Exercise({
           ref={inputRef}
           inputMode="numeric"
           autoComplete="off"
-          autoFocus={autoFocus}
+          autoFocus={autoFocus && !voiceOn}
           value={typed}
           onChange={(event) => setTyped(event.target.value)}
         />

@@ -95,6 +95,7 @@ export default function TestPage() {
             onAnswer={handleAnswer}
             vanishAfterMs={vanishAfterMs(settings)}
             autoFocus
+            voice={settings.voice && !settingsOpen}
           >
             <ResultLine
               result={test.answers.at(-1) ?? null}
@@ -141,7 +142,7 @@ function TestResults({ answers }: { answers: typeof READY.answers }) {
             <li key={i} className={a.correct ? "correct" : "wrong"}>
               {a.correct
                 ? `✓ ${a.number}`
-                : `✗ ${a.number}, you typed ${a.typed}`}
+                : `✗ ${a.number}, you answered ${a.typed}`}
             </li>
           ))}
         </ol>

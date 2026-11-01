@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../../App";
 import { TEST_SETTINGS_KEY } from "../../settings";
+import { installFakeSpeech } from "../../test/fakeSpeech";
 
 // With Math.random at 0, every number is 1 (in the default 1-3 digits),
 // so "1" is right and anything else is wrong.
@@ -110,7 +111,7 @@ describe("<TestPage>", () => {
     expect(answerBox()).toBeNull();
     expect(screen.getByText("2 / 3")).toBeTruthy();
     const rows = screen.getAllByRole("listitem").map((li) => li.textContent);
-    expect(rows).toEqual(["✓ 1", "✗ 1, you typed 7", "✓ 1"]);
+    expect(rows).toEqual(["✓ 1", "✗ 1, you answered 7", "✓ 1"]);
   });
 
   it("says so when nothing was answered (AC6)", () => {
@@ -141,5 +142,60 @@ describe("<TestPage>", () => {
     goTo("test");
     expect(screen.getByRole("button", { name: /^start$/i })).toBeTruthy();
     expect(settingsButton().disabled).toBe(false);
+  });
+
+  describe("voice answers (epic 004)", () => {
+    const voiceStatus = () => screen.queryByTestId("voice-status");
+
+    /** Saves Test settings with voice answers on and starts a test. */
+    function startWithVoice() {
+      localStorage.setItem(TEST_SETTINGS_KEY, JSON.stringify({ voice: true }));
+      const created = installFakeSpeech();
+      render(<App />);
+      expect(created).toHaveLength(0);
+      click(/start/i);
+      return created;
+    }
+
+    it("listens once the test starts, without opening the keyboard (AC3, AC7)", () => {
+      const created = startWithVoice();
+      expect(voiceStatus()?.textContent).toMatch(/listening/i);
+      expect(created.at(-1)?.listening).toBe(true);
+      expect(document.activeElement).not.toBe(answerBox());
+    });
+
+    it("answers with the spoken number and moves on (AC4)", () => {
+      const created = startWithVoice();
+      act(() => created.at(-1)?.hear("one"));
+      expect(screen.getByRole("status").textContent).toMatch(/right.*1/i);
+      act(() => created.at(-1)?.hear("seven"));
+      expect(screen.getByRole("status").textContent).toMatch(/not quite/i);
+      expect(screen.getByText("Score: 1 / 2")).toBeTruthy();
+    });
+
+    it("still takes typed answers (AC7)", () => {
+      startWithVoice();
+      answerWith("1");
+      expect(screen.getByText("Score: 1 / 1")).toBeTruthy();
+    });
+
+    it("stops listening when the time is up (AC3)", () => {
+      const created = startWithVoice();
+      act(() => created.at(-1)?.hear("7"));
+      const last = created.at(-1);
+      wait(60_000);
+      expect(last?.aborted).toBe(true);
+      expect(voiceStatus()).toBeNull();
+      const rows = screen.getAllByRole("listitem").map((li) => li.textContent);
+      expect(rows).toEqual(["✗ 1, you answered 7"]);
+    });
+
+    it("doesn't listen when voice answers are off", () => {
+      const created = installFakeSpeech();
+      render(<App />);
+      click(/start/i);
+      expect(created).toHaveLength(0);
+      expect(voiceStatus()).toBeNull();
+    });
   });
 });
